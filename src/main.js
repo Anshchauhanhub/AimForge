@@ -8,7 +8,9 @@ const state = {
   timeLeft: 25 * 60, // 25 mins default
   isTimerRunning: false,
   activeTopic: null,
-  notificationTimer: null
+  notificationTimer: null,
+  token: localStorage.getItem('focus_token'),
+  authMode: 'login' // 'login' or 'register'
 };
 
 // DOM Elements
@@ -37,11 +39,30 @@ const els = {
   notificationOverlay: document.getElementById('notificationOverlay'),
   notifTitle: document.getElementById('notifTitle'),
   notifMessage: document.getElementById('notifMessage'),
-  bypassToTimerBtn: document.getElementById('bypassToTimerBtn')
+  bypassToTimerBtn: document.getElementById('bypassToTimerBtn'),
+
+  // Auth
+  authContent: document.getElementById('authContent'),
+  appContent: document.getElementById('appContent'),
+  authForm: document.getElementById('authForm'),
+  authSubtitle: document.getElementById('authSubtitle'),
+  usernameInput: document.getElementById('username'),
+  passwordInput: document.getElementById('password'),
+  authSubmitBtn: document.getElementById('authSubmitBtn'),
+  authError: document.getElementById('authError'),
+  authToggleText: document.getElementById('authToggleText'),
+  authToggleLink: document.getElementById('authToggleLink'),
+  logoutBtn: document.getElementById('logoutBtn')
 };
 
 // Initialize
 function init() {
+  if (state.token) {
+    showApp();
+  } else {
+    showAuth();
+  }
+
   updateStatsPanel();
   setupEventListeners();
   if (state.plan.length > 0) renderPlan();
@@ -94,6 +115,122 @@ function setupEventListeners() {
 
   // Notification Bypass
   els.bypassToTimerBtn.addEventListener('click', bypassToTimer);
+
+  // Auth
+  els.authToggleLink.addEventListener('click', toggleAuthMode);
+  els.authForm.addEventListener('submit', handleAuthSubmit);
+  els.logoutBtn.addEventListener('click', logout);
+}
+
+// ==============
+// Auth Logic
+// ==============
+function showAuth() {
+  els.appContent.classList.add('hidden');
+  els.authContent.classList.remove('hidden');
+  clearAuthError();
+}
+
+function showApp() {
+  els.authContent.classList.add('hidden');
+  els.appContent.classList.remove('hidden');
+  // Start random notification loop only when logged in
+  scheduleRandomNotification();
+}
+
+function toggleAuthMode(e) {
+  e.preventDefault();
+  state.authMode = state.authMode === 'login' ? 'register' : 'login';
+  clearAuthError();
+
+  if (state.authMode === 'register') {
+    els.authSubtitle.textContent = "Create an account to start syncing";
+    els.authSubmitBtn.textContent = "Sign Up";
+    els.authToggleText.textContent = "Already have an account?";
+    els.authToggleLink.textContent = "Log in";
+  } else {
+    els.authSubtitle.textContent = "Log in to sync your productivity";
+    els.authSubmitBtn.textContent = "Log In";
+    els.authToggleText.textContent = "Don't have an account?";
+    els.authToggleLink.textContent = "Sign up";
+  }
+}
+
+function clearAuthError() {
+  els.authError.textContent = '';
+  els.authError.classList.add('hidden');
+}
+
+function showAuthError(msg) {
+  els.authError.textContent = msg;
+  els.authError.classList.remove('hidden');
+}
+
+async function handleAuthSubmit(e) {
+  e.preventDefault();
+  const username = els.usernameInput.value.trim();
+  const password = els.passwordInput.value.trim();
+  if (!username || !password) return;
+
+  els.authSubmitBtn.disabled = true;
+  clearAuthError();
+
+  try {
+    if (state.authMode === 'register') {
+      const res = await fetch('http://localhost:8000/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.detail || 'Registration failed');
+      }
+      // Auto-switch to login mode
+      state.authMode = 'login';
+      showAuthError("Account created! Logging you in...");
+    }
+
+    // Login (both for manual login and auto-login after register)
+    const formData = new URLSearchParams();
+    formData.append('username', username);
+    formData.append('password', password);
+
+    const loginRes = await fetch('http://localhost:8000/api/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: formData
+    });
+
+    if (!loginRes.ok) {
+      const errorData = await loginRes.json();
+      throw new Error(errorData.detail || 'Login failed');
+    }
+
+    const data = await loginRes.json();
+    state.token = data.access_token;
+    localStorage.setItem('focus_token', state.token);
+
+    // Clear inputs and show app
+    els.usernameInput.value = '';
+    els.passwordInput.value = '';
+    showApp();
+
+  } catch (err) {
+    showAuthError(err.message);
+  } finally {
+    els.authSubmitBtn.disabled = false;
+  }
+}
+
+function logout() {
+  state.token = null;
+  localStorage.removeItem('focus_token');
+
+  // Optionally clear plan/streaks or keep them local. 
+  // We'll keep them local for this demo but stop the UI loop.
+  clearTimeout(state.notificationTimer);
+  showAuth();
 }
 
 // ==============
@@ -129,14 +266,27 @@ function scrollToBottom(element) {
 }
 
 async function generatePlanFromChat(userText, indicator) {
+  if (!state.token) {
+    logout();
+    return;
+  }
+
   try {
     const response = await fetch('http://localhost:8000/api/chat', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${state.token}`
+      },
       body: JSON.stringify({ message: userText })
     });
 
     indicator.remove();
+
+    if (response.status === 401) {
+      logout();
+      throw new Error('Session expired. Please log in again.');
+    }
 
     if (!response.ok) {
       throw new Error(`API Error: ${response.status}`);

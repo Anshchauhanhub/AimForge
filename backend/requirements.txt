@@ -4,3 +4,7 @@ python-dotenv
 requests
 pydantic
 huggingface_hub
+sqlalchemy
+passlib[bcrypt]
+python-jose[cryptography]
+python-multipart

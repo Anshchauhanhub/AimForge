@@ -1,31 +1,64 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FocusFlow | AI Productivity Builder</title>
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/src/style.css">
-  </head>
-  <body class="dark-theme">
-    <div id="app" class="app-container">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FocusFlow | AI Productivity Builder</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/style.css">
+</head>
+
+<body class="dark-theme">
+  <div id="app" class="app-container">
+
+    <!-- Auth Screen -->
+    <div id="authContent" class="auth-wrapper glass-panel">
+      <div class="auth-header">
+        <div class="logo-icon center-icon"></div>
+        <h2>Welcome to FocusFlow</h2>
+        <p id="authSubtitle">Log in to sync your productivity</p>
+      </div>
+
+      <form id="authForm" class="auth-form">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" required autocomplete="username" />
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" required autocomplete="current-password" />
+        </div>
+        <div id="authError" class="auth-error hidden"></div>
+
+        <button type="submit" id="authSubmitBtn" class="primary-btn w-full">Log In</button>
+      </form>
+
+      <p class="auth-toggle">
+        <span id="authToggleText">Don't have an account?</span>
+        <a href="#" id="authToggleLink">Sign up</a>
+      </p>
+    </div>
+
+    <!-- Main App Shell -->
+    <div id="appContent" class="app-content-wrapper hidden">
       <!-- Sidebar -->
       <aside class="sidebar glass-panel">
         <div class="logo-area">
           <div class="logo-icon"></div>
           <h1>FocusFlow</h1>
         </div>
-        
+
         <div class="stats-area">
           <div class="stat-card">
             <h3>Daily Streak</h3>
             <div class="streak-count" id="streakCounter">0</div>
             <p class="stat-label">Days focused</p>
           </div>
-          
+
           <div class="stat-card">
             <h3>Completed Sessions</h3>
             <div class="session-count" id="sessionCounter">0</div>
@@ -43,6 +76,10 @@
           <button class="nav-btn" data-view="timer">
             <span class="icon">⏱️</span> Focus Timer
           </button>
+          <div style="flex:1"></div>
+          <button class="nav-btn logout-btn" id="logoutBtn">
+            <span class="icon">🚪</span> Logout
+          </button>
         </nav>
       </aside>
 
@@ -57,7 +94,8 @@
           <div class="chat-container glass-panel">
             <div class="chat-messages" id="chatMessages">
               <div class="message ai-message">
-                <div class="message-content">Hello! I'm your AI productivity coach. What do you need to focus on today? (e.g., "I have 3 hours to study Data Science")</div>
+                <div class="message-content">Hello! I'm your AI productivity coach. What do you need to focus on today?
+                  (e.g., "I have 3 hours to study Data Science")</div>
               </div>
             </div>
             <div class="chat-input-area">
@@ -95,19 +133,22 @@
         </section>
       </main>
 
-      <!-- Notification Overlay -->
-      <div id="notificationOverlay" class="notification-overlay hidden">
-        <div class="notification-card glass-panel pop-in">
-          <div class="notif-header">
-            <span class="notif-icon">🔥</span>
-            <span>Focus Time!</span>
-          </div>
-          <h3 id="notifTitle">Time for Data Science!</h3>
-          <p id="notifMessage">You've been slacking for 30 mins. Drop into the zone right now and conquer algorithms.</p>
-          <button id="bypassToTimerBtn" class="primary-btn w-full">Drop into Timer</button>
+    </div> <!-- End App Content -->
+
+    <!-- Notification Overlay -->
+    <div id="notificationOverlay" class="notification-overlay hidden">
+      <div class="notification-card glass-panel pop-in">
+        <div class="notif-header">
+          <span class="notif-icon">🔥</span>
+          <span>Focus Time!</span>
         </div>
+        <h3 id="notifTitle">Time for Data Science!</h3>
+        <p id="notifMessage">You've been slacking for 30 mins. Drop into the zone right now and conquer algorithms.</p>
+        <button id="bypassToTimerBtn" class="primary-btn w-full">Drop into Timer</button>
       </div>
     </div>
-    <script type="module" src="/src/main.js"></script>
-  </body>
+  </div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+
 </html>
