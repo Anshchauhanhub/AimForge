@@ -17,22 +17,22 @@ const els = {
   sessionCounter: document.getElementById('sessionCounter'),
   navBtns: document.querySelectorAll('.nav-btn'),
   views: document.querySelectorAll('.view'),
-  
+
   // Chat
   chatMessages: document.getElementById('chatMessages'),
   chatInput: document.getElementById('chatInput'),
   sendChatBtn: document.getElementById('sendChatBtn'),
-  
+
   // Plan
   planContainer: document.getElementById('planContainer'),
-  
+
   // Timer
   currentFocusTopic: document.getElementById('currentFocusTopic'),
   timerDisplay: document.getElementById('timerDisplay'),
   startTimerBtn: document.getElementById('startTimerBtn'),
   pauseTimerBtn: document.getElementById('pauseTimerBtn'),
   finishTimerBtn: document.getElementById('finishTimerBtn'),
-  
+
   // Notification
   notificationOverlay: document.getElementById('notificationOverlay'),
   notifTitle: document.getElementById('notifTitle'),
@@ -45,7 +45,7 @@ function init() {
   updateStatsPanel();
   setupEventListeners();
   if (state.plan.length > 0) renderPlan();
-  
+
   // Start random notification loop
   scheduleRandomNotification();
 }
@@ -59,11 +59,11 @@ function updateStatsPanel() {
 
 function switchView(viewName) {
   state.currentView = viewName;
-  
+
   els.navBtns.forEach(btn => {
     btn.classList.toggle('active', btn.dataset.view === viewName);
   });
-  
+
   els.views.forEach(view => {
     view.classList.remove('active-view');
     view.classList.add('hidden-view');
@@ -102,10 +102,10 @@ function setupEventListeners() {
 function handleUserChat() {
   const text = els.chatInput.value.trim();
   if (!text) return;
-  
+
   appendMessage('user', text);
   els.chatInput.value = '';
-  
+
   // Show typing indicator
   const indicator = document.createElement('div');
   indicator.className = 'message ai-message typing-indicator';
@@ -113,11 +113,7 @@ function handleUserChat() {
   els.chatMessages.appendChild(indicator);
   scrollToBottom(els.chatMessages);
 
-  // Mock AI Processing
-  setTimeout(() => {
-    indicator.remove();
-    generatePlanFromChat(text);
-  }, 1500);
+  generatePlanFromChat(text, indicator);
 }
 
 function appendMessage(sender, text) {
@@ -132,31 +128,38 @@ function scrollToBottom(element) {
   element.scrollTop = element.scrollHeight;
 }
 
-function generatePlanFromChat(userText) {
-  // Very basic mock AI logic based on keywords
-  let duration = 25; // default
-  let topics = ["Core Concepts", "Practice Problems"];
-  
-  if (userText.toLowerCase().includes('data science')) {
-    topics = ["Pandas & Data Cleaning", "Machine Learning Basics", "Model Evaluation"];
-  } else if (userText.toLowerCase().includes('math')) {
-    topics = ["Calculus Review", "Linear Algebra", "Practice Set 1"];
-  } else if (userText.toLowerCase().includes('code')) {
-    topics = ["System Design", "Algorithms", "Bug Fixing"];
+async function generatePlanFromChat(userText, indicator) {
+  try {
+    const response = await fetch('http://localhost:8000/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: userText })
+    });
+
+    indicator.remove();
+
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    // Create new plan array
+    state.plan = data.plan.map((t, i) => ({
+      id: Date.now() + i,
+      topic: t.topic,
+      duration: t.duration || 25,
+      completed: false
+    }));
+
+    localStorage.setItem('focus_plan', JSON.stringify(state.plan));
+
+    appendMessage('ai', data.reply);
+  } catch (err) {
+    console.error(err);
+    if (indicator.parentNode) indicator.remove();
+    appendMessage('ai', 'Error connecting to the AI backend. Please make sure the Python server is running on port 8000 and the HF token is set in the .env file.');
   }
-
-  // Create new plan array
-  state.plan = topics.map((t, i) => ({
-    id: Date.now() + i,
-    topic: t,
-    duration: duration,
-    completed: false
-  }));
-  
-  localStorage.setItem('focus_plan', JSON.stringify(state.plan));
-
-  const responseText = `I've analyzed your goal! I've created a custom ${topics.length}-part plan tailored for you. Check out **Today's Plan** to review it.`;
-  appendMessage('ai', responseText);
 }
 
 // ==============
@@ -167,7 +170,7 @@ function renderPlan() {
     els.planContainer.innerHTML = '<div class="empty-state">No plan generated yet. Go to Chat to create one!</div>';
     return;
   }
-  
+
   els.planContainer.innerHTML = '';
   state.plan.forEach(item => {
     const el = document.createElement('div');
@@ -178,10 +181,10 @@ function renderPlan() {
         <p>${item.duration} Min Focus Session</p>
       </div>
       <div>
-        ${item.completed 
-          ? `<span style="color:var(--success-color); font-weight: bold;">✓ Done</span>`
-          : `<button class="primary-btn" onclick="document.dispatchEvent(new CustomEvent('start-topic', {detail: '${item.id}'}))">Focus Now</button>`
-        }
+        ${item.completed
+        ? `<span style="color:var(--success-color); font-weight: bold;">✓ Done</span>`
+        : `<button class="primary-btn" onclick="document.dispatchEvent(new CustomEvent('start-topic', {detail: '${item.id}'}))">Focus Now</button>`
+      }
       </div>
     `;
     els.planContainer.appendChild(el);
@@ -205,10 +208,10 @@ function prepareTimerFor(planItem) {
   state.timeLeft = planItem.duration * 60;
   state.isTimerRunning = false;
   clearInterval(state.timer);
-  
+
   els.currentFocusTopic.textContent = `Focusing on: ${planItem.topic}`;
   updateTimerDisplay();
-  
+
   els.startTimerBtn.classList.remove('hidden');
   els.pauseTimerBtn.classList.add('hidden');
   els.finishTimerBtn.classList.add('hidden');
@@ -227,7 +230,7 @@ function updateTimerDisplay() {
 function startTimer() {
   if (state.isTimerRunning) return;
   state.isTimerRunning = true;
-  
+
   els.startTimerBtn.classList.add('hidden');
   els.startTimerBtn.classList.remove('pulse-anim');
   els.pauseTimerBtn.classList.remove('hidden');
@@ -246,7 +249,7 @@ function startTimer() {
 function pauseTimer() {
   state.isTimerRunning = false;
   clearInterval(state.timer);
-  
+
   els.startTimerBtn.classList.remove('hidden');
   els.startTimerBtn.textContent = "Resume";
   els.pauseTimerBtn.classList.add('hidden');
@@ -255,19 +258,19 @@ function pauseTimer() {
 function finishTimerSession() {
   clearInterval(state.timer);
   state.isTimerRunning = false;
-  
+
   // Gamification Logic
   state.sessions++;
   // Increment streak if first session of day (simplified logic, usually needs date check)
   state.streak++;
-  
+
   if (state.activeTopic) {
     state.activeTopic.completed = true;
     localStorage.setItem('focus_plan', JSON.stringify(state.plan));
   }
 
   updateStatsPanel();
-  
+
   els.currentFocusTopic.textContent = `Session Complete! +1 Streak`;
   els.startTimerBtn.classList.add('hidden');
   els.pauseTimerBtn.classList.add('hidden');
@@ -281,7 +284,7 @@ function finishTimerSession() {
 function scheduleRandomNotification() {
   // Fire between 10 to 20 seconds for demo purposes
   const delay = Math.floor(Math.random() * 10000) + 10000;
-  
+
   state.notificationTimer = setTimeout(() => {
     // Don't show if they are already in timer and it's running
     if (state.currentView === 'timer' && state.isTimerRunning) {
@@ -308,24 +311,24 @@ function showNotification() {
     `A champion doesn't wait for the 'right time'. Drop in and conquer ${targetTopic} now.`,
     `Your future self is begging you to work on ${targetTopic} right now. Let's go.`
   ];
-  
+
   const msg = motivations[Math.floor(Math.random() * motivations.length)];
-  
+
   els.notifMessage.textContent = msg;
   els.notifTitle.textContent = `Time for ${targetTopic}!`;
   els.notificationOverlay.classList.remove('hidden');
-  
+
   // Attach current item directly to bypass btn for convenience
   els.bypassToTimerBtn.onclick = () => {
     els.notificationOverlay.classList.add('hidden');
-    
+
     if (targetItem) {
       prepareTimerFor(targetItem);
     } else {
       // Create a dummy ad-hoc plan item if no plan
       prepareTimerFor({ id: 999, topic: "Ad-hoc Focus", duration: 25, completed: false });
     }
-    
+
     startTimer();
     scheduleRandomNotification();
   };
