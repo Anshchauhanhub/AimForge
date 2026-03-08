@@ -383,46 +383,49 @@ button {
 /* Notification Overlay */
 .notification-overlay {
   position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  bottom: 2rem;
+  right: 2rem;
   z-index: 100;
+  display: flex;
+  pointer-events: none;
 }
 
 .notification-card {
-  width: 400px;
-  padding: 2rem;
-  text-align: center;
+  width: 350px;
+  padding: 1.5rem;
+  text-align: left;
+  pointer-events: auto;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  border-left: 4px solid var(--primary-color);
 }
 
 .notif-header {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 0.5rem;
   color: var(--primary-color);
   font-weight: 600;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
   text-transform: uppercase;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   letter-spacing: 1px;
 }
 
 .notif-icon {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
 }
 
 .notification-card h3 {
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
   color: #fff;
 }
 
 .notification-card p {
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  line-height: 1.4;
 }
 
 /* Animations */

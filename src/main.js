@@ -337,8 +337,8 @@ async function finishTimerSession() {
 // Notification System (AI Motivation)
 // ==============
 function scheduleRandomNotification() {
-  // Fire between 10 to 20 seconds for demo purposes
-  const delay = Math.floor(Math.random() * 10000) + 10000;
+  // Fire every 30 seconds
+  const delay = 30000;
 
   state.notificationTimer = setTimeout(() => {
     // Don't show if they are already in timer and it's running
