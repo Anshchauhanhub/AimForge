@@ -1,16 +1,14 @@
 // State Management
 const state = {
-  streak: parseInt(localStorage.getItem('focus_streak') || '0'),
-  sessions: parseInt(localStorage.getItem('focus_sessions') || '0'),
+  streak: 0,
+  sessions: 0,
   currentView: 'chat',
-  plan: JSON.parse(localStorage.getItem('focus_plan') || '[]'),
+  plan: [],
   timer: null,
   timeLeft: 25 * 60, // 25 mins default
   isTimerRunning: false,
   activeTopic: null,
-  notificationTimer: null,
-  token: localStorage.getItem('focus_token'),
-  authMode: 'login' // 'login' or 'register'
+  notificationTimer: null
 };
 
 // DOM Elements
@@ -41,27 +39,13 @@ const els = {
   notifMessage: document.getElementById('notifMessage'),
   bypassToTimerBtn: document.getElementById('bypassToTimerBtn'),
 
-  // Auth
-  authContent: document.getElementById('authContent'),
-  appContent: document.getElementById('appContent'),
-  authForm: document.getElementById('authForm'),
-  authSubtitle: document.getElementById('authSubtitle'),
-  usernameInput: document.getElementById('username'),
-  passwordInput: document.getElementById('password'),
-  authSubmitBtn: document.getElementById('authSubmitBtn'),
-  authError: document.getElementById('authError'),
-  authToggleText: document.getElementById('authToggleText'),
-  authToggleLink: document.getElementById('authToggleLink'),
-  logoutBtn: document.getElementById('logoutBtn')
+  appContent: document.getElementById('appContent')
 };
 
 // Initialize
-function init() {
-  if (state.token) {
-    showApp();
-  } else {
-    showAuth();
-  }
+async function init() {
+  showApp();
+  await loadUserData();
 
   updateStatsPanel();
   setupEventListeners();
@@ -71,11 +55,29 @@ function init() {
   scheduleRandomNotification();
 }
 
+async function loadUserData() {
+  try {
+    const statsRes = await fetch('http://127.0.0.1:8000/api/me');
+    if (!statsRes.ok) throw new Error('Could not fetch user data');
+    const stats = await statsRes.json();
+    state.streak = stats.streak;
+    state.sessions = stats.sessions;
+
+    const planRes = await fetch('http://127.0.0.1:8000/api/plan');
+    if (planRes.ok) {
+      state.plan = await planRes.json();
+    }
+
+    updateStatsPanel();
+    if (state.currentView === 'plan') renderPlan();
+  } catch (e) {
+    console.error("Failed to load global user data:", e);
+  }
+}
+
 function updateStatsPanel() {
   els.streakCounter.textContent = state.streak;
   els.sessionCounter.textContent = state.sessions;
-  localStorage.setItem('focus_streak', state.streak.toString());
-  localStorage.setItem('focus_sessions', state.sessions.toString());
 }
 
 function switchView(viewName) {
@@ -115,122 +117,11 @@ function setupEventListeners() {
 
   // Notification Bypass
   els.bypassToTimerBtn.addEventListener('click', bypassToTimer);
-
-  // Auth
-  els.authToggleLink.addEventListener('click', toggleAuthMode);
-  els.authForm.addEventListener('submit', handleAuthSubmit);
-  els.logoutBtn.addEventListener('click', logout);
-}
-
-// ==============
-// Auth Logic
-// ==============
-function showAuth() {
-  els.appContent.classList.add('hidden');
-  els.authContent.classList.remove('hidden');
-  clearAuthError();
 }
 
 function showApp() {
-  els.authContent.classList.add('hidden');
   els.appContent.classList.remove('hidden');
-  // Start random notification loop only when logged in
   scheduleRandomNotification();
-}
-
-function toggleAuthMode(e) {
-  e.preventDefault();
-  state.authMode = state.authMode === 'login' ? 'register' : 'login';
-  clearAuthError();
-
-  if (state.authMode === 'register') {
-    els.authSubtitle.textContent = "Create an account to start syncing";
-    els.authSubmitBtn.textContent = "Sign Up";
-    els.authToggleText.textContent = "Already have an account?";
-    els.authToggleLink.textContent = "Log in";
-  } else {
-    els.authSubtitle.textContent = "Log in to sync your productivity";
-    els.authSubmitBtn.textContent = "Log In";
-    els.authToggleText.textContent = "Don't have an account?";
-    els.authToggleLink.textContent = "Sign up";
-  }
-}
-
-function clearAuthError() {
-  els.authError.textContent = '';
-  els.authError.classList.add('hidden');
-}
-
-function showAuthError(msg) {
-  els.authError.textContent = msg;
-  els.authError.classList.remove('hidden');
-}
-
-async function handleAuthSubmit(e) {
-  e.preventDefault();
-  const username = els.usernameInput.value.trim();
-  const password = els.passwordInput.value.trim();
-  if (!username || !password) return;
-
-  els.authSubmitBtn.disabled = true;
-  clearAuthError();
-
-  try {
-    if (state.authMode === 'register') {
-      const res = await fetch('http://localhost:8000/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      });
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.detail || 'Registration failed');
-      }
-      // Auto-switch to login mode
-      state.authMode = 'login';
-      showAuthError("Account created! Logging you in...");
-    }
-
-    // Login (both for manual login and auto-login after register)
-    const formData = new URLSearchParams();
-    formData.append('username', username);
-    formData.append('password', password);
-
-    const loginRes = await fetch('http://localhost:8000/api/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: formData
-    });
-
-    if (!loginRes.ok) {
-      const errorData = await loginRes.json();
-      throw new Error(errorData.detail || 'Login failed');
-    }
-
-    const data = await loginRes.json();
-    state.token = data.access_token;
-    localStorage.setItem('focus_token', state.token);
-
-    // Clear inputs and show app
-    els.usernameInput.value = '';
-    els.passwordInput.value = '';
-    showApp();
-
-  } catch (err) {
-    showAuthError(err.message);
-  } finally {
-    els.authSubmitBtn.disabled = false;
-  }
-}
-
-function logout() {
-  state.token = null;
-  localStorage.removeItem('focus_token');
-
-  // Optionally clear plan/streaks or keep them local. 
-  // We'll keep them local for this demo but stop the UI loop.
-  clearTimeout(state.notificationTimer);
-  showAuth();
 }
 
 // ==============
@@ -266,27 +157,16 @@ function scrollToBottom(element) {
 }
 
 async function generatePlanFromChat(userText, indicator) {
-  if (!state.token) {
-    logout();
-    return;
-  }
-
   try {
-    const response = await fetch('http://localhost:8000/api/chat', {
+    const response = await fetch('http://127.0.0.1:8000/api/chat', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${state.token}`
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({ message: userText })
     });
 
     indicator.remove();
-
-    if (response.status === 401) {
-      logout();
-      throw new Error('Session expired. Please log in again.');
-    }
 
     if (!response.ok) {
       throw new Error(`API Error: ${response.status}`);
@@ -294,15 +174,25 @@ async function generatePlanFromChat(userText, indicator) {
 
     const data = await response.json();
 
-    // Create new plan array
-    state.plan = data.plan.map((t, i) => ({
-      id: Date.now() + i,
+    // Save to backend
+    const newPlan = data.plan.map(t => ({
       topic: t.topic,
-      duration: t.duration || 25,
-      completed: false
+      duration: t.duration || 25
     }));
 
-    localStorage.setItem('focus_plan', JSON.stringify(state.plan));
+    const saveRes = await fetch('http://127.0.0.1:8000/api/plan', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(newPlan)
+    });
+
+    if (saveRes.ok) {
+      state.plan = await saveRes.json();
+    } else {
+      throw new Error("Failed to save plan to backend");
+    }
 
     appendMessage('ai', data.reply);
   } catch (err) {
@@ -405,7 +295,7 @@ function pauseTimer() {
   els.pauseTimerBtn.classList.add('hidden');
 }
 
-function finishTimerSession() {
+async function finishTimerSession() {
   clearInterval(state.timer);
   state.isTimerRunning = false;
 
@@ -414,11 +304,6 @@ function finishTimerSession() {
   // Increment streak if first session of day (simplified logic, usually needs date check)
   state.streak++;
 
-  if (state.activeTopic) {
-    state.activeTopic.completed = true;
-    localStorage.setItem('focus_plan', JSON.stringify(state.plan));
-  }
-
   updateStatsPanel();
 
   els.currentFocusTopic.textContent = `Session Complete! +1 Streak`;
@@ -426,14 +311,34 @@ function finishTimerSession() {
   els.pauseTimerBtn.classList.add('hidden');
   els.finishTimerBtn.classList.add('hidden');
   setTimeout(() => switchView('plan'), 2500);
+
+  // Sync to backend
+  try {
+    await fetch('http://127.0.0.1:8000/api/me/stats', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ streak_add: 1, sessions_add: 1 })
+    });
+
+    if (state.activeTopic) {
+      state.activeTopic.completed = true;
+      await fetch(`http://127.0.0.1:8000/api/plan/${state.activeTopic.id}`, {
+        method: 'PUT'
+      });
+    }
+  } catch (err) {
+    console.error("Failed to sync stats", err);
+  }
 }
 
 // ==============
 // Notification System (AI Motivation)
 // ==============
 function scheduleRandomNotification() {
-  // Fire between 10 to 20 seconds for demo purposes
-  const delay = Math.floor(Math.random() * 10000) + 10000;
+  // Fire every 30 seconds
+  const delay = 30000;
 
   state.notificationTimer = setTimeout(() => {
     // Don't show if they are already in timer and it's running

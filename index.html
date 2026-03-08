@@ -15,36 +15,8 @@
 <body class="dark-theme">
   <div id="app" class="app-container">
 
-    <!-- Auth Screen -->
-    <div id="authContent" class="auth-wrapper glass-panel">
-      <div class="auth-header">
-        <div class="logo-icon center-icon"></div>
-        <h2>Welcome to FocusFlow</h2>
-        <p id="authSubtitle">Log in to sync your productivity</p>
-      </div>
-
-      <form id="authForm" class="auth-form">
-        <div class="form-group">
-          <label for="username">Username</label>
-          <input type="text" id="username" required autocomplete="username" />
-        </div>
-        <div class="form-group">
-          <label for="password">Password</label>
-          <input type="password" id="password" required autocomplete="current-password" />
-        </div>
-        <div id="authError" class="auth-error hidden"></div>
-
-        <button type="submit" id="authSubmitBtn" class="primary-btn w-full">Log In</button>
-      </form>
-
-      <p class="auth-toggle">
-        <span id="authToggleText">Don't have an account?</span>
-        <a href="#" id="authToggleLink">Sign up</a>
-      </p>
-    </div>
-
     <!-- Main App Shell -->
-    <div id="appContent" class="app-content-wrapper hidden">
+    <div id="appContent" class="app-content-wrapper">
       <!-- Sidebar -->
       <aside class="sidebar glass-panel">
         <div class="logo-area">
@@ -77,9 +49,6 @@
             <span class="icon">⏱️</span> Focus Timer
           </button>
           <div style="flex:1"></div>
-          <button class="nav-btn logout-btn" id="logoutBtn">
-            <span class="icon">🚪</span> Logout
-          </button>
         </nav>
       </aside>
 
