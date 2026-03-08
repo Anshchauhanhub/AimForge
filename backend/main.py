@@ -1,7 +1,6 @@
 from fastapi import FastAPI, HTTPException, Depends, status
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 import os
 import json
@@ -10,7 +9,6 @@ from huggingface_hub import InferenceClient
 
 import models
 from database import engine, get_db
-import auth
 
 # Create DB tables
 models.Base.metadata.create_all(bind=engine)
@@ -38,40 +36,29 @@ class UserCreate(BaseModel):
     username: str
     password: str
 
-@app.post("/api/register")
-def register(user: UserCreate, db: Session = Depends(get_db)):
-    try:
-        db_user = db.query(models.User).filter(models.User.username == user.username).first()
-        if db_user:
-            raise HTTPException(status_code=400, detail="Username already registered")
-        
-        hashed_password = auth.get_password_hash(user.password)
-        new_user = models.User(username=user.username, hashed_password=hashed_password)
-        db.add(new_user)
-        db.commit()
-        db.refresh(new_user)
-        return {"message": "User created successfully"}
-    except Exception as e:
-        import traceback
-        print("Exception in register:")
-        traceback.print_exc()
-        db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+class PlanItemBase(BaseModel):
+    topic: str
+    duration: int
 
-@app.post("/api/token")
-def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    user = db.query(models.User).filter(models.User.username == form_data.username).first()
-    if not user or not auth.verify_password(form_data.password, user.hashed_password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    access_token = auth.create_access_token(data={"sub": user.username})
-    return {"access_token": access_token, "token_type": "bearer"}
+class PlanItemResponse(PlanItemBase):
+    id: int
+    completed: bool
+
+class StatsUpdate(BaseModel):
+    streak_add: int = 0
+    sessions_add: int = 0
+
+def get_global_user(db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.id == 1).first()
+    if not user:
+        user = models.User(username="default_player")
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+    return user
 
 @app.post("/api/chat")
-def chat(request: ChatRequest, current_user: models.User = Depends(auth.get_current_user)):
+def chat(request: ChatRequest):
     if not HF_TOKEN or HF_TOKEN == "your_hugging_face_token_here":
         raise HTTPException(status_code=500, detail="Hugging Face token not configured in .env")
     
@@ -120,6 +107,55 @@ Respond ONLY with a valid JSON object matching this schema. Do NOT include markd
         except:
             pass
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/me")
+def get_me(current_user: models.User = Depends(get_global_user)):
+    return {
+        "username": current_user.username,
+        "streak": current_user.streak,
+        "sessions": current_user.sessions
+    }
+
+@app.post("/api/me/stats")
+def update_stats(stats: StatsUpdate, current_user: models.User = Depends(get_global_user), db: Session = Depends(get_db)):
+    if stats.streak_add > 0:
+        current_user.streak += stats.streak_add
+    if stats.sessions_add > 0:
+        current_user.sessions += stats.sessions_add
+    db.commit()
+    db.refresh(current_user)
+    return {"streak": current_user.streak, "sessions": current_user.sessions}
+
+@app.get("/api/plan")
+def get_plan(current_user: models.User = Depends(get_global_user), db: Session = Depends(get_db)):
+    items = db.query(models.PlanItem).filter(models.PlanItem.user_id == current_user.id).all()
+    return [{"id": item.id, "topic": item.topic, "duration": item.duration, "completed": bool(item.completed)} for item in items]
+
+@app.post("/api/plan")
+def save_plan(items: list[PlanItemBase], current_user: models.User = Depends(get_global_user), db: Session = Depends(get_db)):
+    # Clear old incomplete plan items (optional, but good for fresh plans)
+    db.query(models.PlanItem).filter(models.PlanItem.user_id == current_user.id, models.PlanItem.completed == 0).delete()
+    db.commit()
+    
+    saved_items = []
+    for item in items:
+        db_item = models.PlanItem(user_id=current_user.id, topic=item.topic, duration=item.duration, completed=0)
+        db.add(db_item)
+        saved_items.append(db_item)
+    db.commit()
+    for db_item in saved_items:
+        db.refresh(db_item)
+        
+    return [{"id": item.id, "topic": item.topic, "duration": item.duration, "completed": bool(item.completed)} for item in saved_items]
+
+@app.put("/api/plan/{item_id}")
+def complete_plan_item(item_id: int, current_user: models.User = Depends(get_global_user), db: Session = Depends(get_db)):
+    item = db.query(models.PlanItem).filter(models.PlanItem.id == item_id, models.PlanItem.user_id == current_user.id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    item.completed = 1
+    db.commit()
+    return {"id": item.id, "completed": True}
 
 if __name__ == "__main__":
     import uvicorn
