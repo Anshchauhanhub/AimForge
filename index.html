@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FocusFlow | AI Productivity Builder</title>
+  <title>Jovi | Your AI Instructor</title>
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,33 +20,36 @@
       <!-- Sidebar -->
       <aside class="sidebar glass-panel">
         <div class="logo-area">
-          <div class="logo-icon"></div>
-          <h1>FocusFlow</h1>
+          <div class="jovi-avatar">
+            <div class="jovi-core"></div>
+            <div class="jovi-ring"></div>
+          </div>
+          <h1>Jovi</h1>
         </div>
 
         <div class="stats-area">
           <div class="stat-card">
-            <h3>Daily Streak</h3>
+            <h3>Learning Streak</h3>
             <div class="streak-count" id="streakCounter">0</div>
-            <p class="stat-label">Days focused</p>
+            <p class="stat-label">Consecutive Days</p>
           </div>
 
           <div class="stat-card">
-            <h3>Completed Sessions</h3>
+            <h3>Lessons Completed</h3>
             <div class="session-count" id="sessionCounter">0</div>
-            <p class="stat-label">Total sessions</p>
+            <p class="stat-label">Total Classes</p>
           </div>
         </div>
 
         <nav class="main-nav">
           <button class="nav-btn active" data-view="chat">
-            <span class="icon">💬</span> Plan & Chat
+            <span class="icon">💬</span> Consult Jovi
           </button>
           <button class="nav-btn" data-view="plan">
-            <span class="icon">📅</span> Today's Plan
+            <span class="icon">📋</span> Lesson Plan
           </button>
           <button class="nav-btn" data-view="timer">
-            <span class="icon">⏱️</span> Focus Timer
+            <span class="icon">⏱️</span> Classroom
           </button>
           <div style="flex:1"></div>
         </nav>
@@ -57,19 +60,20 @@
         <!-- Chat View -->
         <section id="view-chat" class="view active-view">
           <header class="view-header">
-            <h2>AI Study Planner</h2>
-            <p>Chat with your AI assistant to generate today's study plan.</p>
+            <h2>AI Instructor Terminal</h2>
+            <p>Tell Jovi your primary aim or goal. I will create your pathway to success.</p>
           </header>
           <div class="chat-container glass-panel">
             <div class="chat-messages" id="chatMessages">
               <div class="message ai-message">
-                <div class="message-content">Hello! I'm your AI productivity coach. What do you need to focus on today?
-                  (e.g., "I have 3 hours to study Data Science")</div>
+                <div class="message-content">Hello! I am Jovi, your personal AI instructor powered by Vivo. What is your
+                  aim for today? Let me guide you to achieve it.
+                  (e.g., "I want to master React JS" or "Teach me advanced Data Structures")</div>
               </div>
             </div>
             <div class="chat-input-area">
-              <input type="text" id="chatInput" placeholder="Type your goal and available time..." autocomplete="off" />
-              <button id="sendChatBtn" class="primary-btn">Send</button>
+              <input type="text" id="chatInput" placeholder="State your aim..." autocomplete="off" />
+              <button id="sendChatBtn" class="primary-btn">Ask Jovi</button>
             </div>
           </div>
         </section>
@@ -77,26 +81,26 @@
         <!-- Plan View -->
         <section id="view-plan" class="view hidden-view">
           <header class="view-header">
-            <h2>Today's Plan</h2>
-            <p>Your AI-generated schedule to crush your goals.</p>
+            <h2>Lesson Plan</h2>
+            <p>Your structured curriculum prepared by Jovi.</p>
           </header>
           <div class="plan-container glass-panel" id="planContainer">
-            <div class="empty-state">No plan generated yet. Go to Chat to create one!</div>
+            <div class="empty-state">No curriculum assigned yet. Consult Jovi to begin!</div>
           </div>
         </section>
 
         <!-- Timer View -->
         <section id="view-timer" class="view hidden-view">
           <header class="view-header">
-            <h2>Focus Session</h2>
-            <p id="currentFocusTopic">Select a topic from your plan to start.</p>
+            <h2>Classroom Session</h2>
+            <p id="currentFocusTopic">Select a module from your Lesson Plan to start.</p>
           </header>
           <div class="timer-container glass-panel">
             <div class="timer-display" id="timerDisplay">25:00</div>
             <div class="timer-controls">
-              <button id="startTimerBtn" class="primary-btn pulse-anim">Start Focus</button>
+              <button id="startTimerBtn" class="primary-btn pulse-anim">Start Lesson</button>
               <button id="pauseTimerBtn" class="secondary-btn hidden">Pause</button>
-              <button id="finishTimerBtn" class="success-btn hidden">Complete Mission</button>
+              <button id="finishTimerBtn" class="success-btn hidden">Conclude Class</button>
             </div>
           </div>
         </section>
@@ -108,12 +112,12 @@
     <div id="notificationOverlay" class="notification-overlay hidden">
       <div class="notification-card glass-panel pop-in">
         <div class="notif-header">
-          <span class="notif-icon">🔥</span>
-          <span>Focus Time!</span>
+          <span class="notif-icon">💡</span>
+          <span>Jovi Instructor</span>
         </div>
-        <h3 id="notifTitle">Time for Data Science!</h3>
-        <p id="notifMessage">You've been slacking for 30 mins. Drop into the zone right now and conquer algorithms.</p>
-        <button id="bypassToTimerBtn" class="primary-btn w-full">Drop into Timer</button>
+        <h3 id="notifTitle">Class is in session!</h3>
+        <p id="notifMessage">You are straying from your curriculum. Come back immediately and master your topic.</p>
+        <button id="bypassToTimerBtn" class="primary-btn w-full">Enter Classroom</button>
       </div>
     </div>
   </div>
