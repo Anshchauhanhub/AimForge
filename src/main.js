@@ -207,7 +207,7 @@ async function generatePlanFromChat(userText, indicator) {
 // ==============
 function renderPlan() {
   if (state.plan.length === 0) {
-    els.planContainer.innerHTML = '<div class="empty-state">No plan generated yet. Go to Chat to create one!</div>';
+    els.planContainer.innerHTML = '<div class="empty-state">No curriculum assigned yet. Consult Jovi to begin!</div>';
     return;
   }
 
@@ -218,12 +218,12 @@ function renderPlan() {
     el.innerHTML = `
       <div class="plan-info">
         <h3>${item.topic}</h3>
-        <p>${item.duration} Min Focus Session</p>
+        <p>${item.duration} Min Lesson Session</p>
       </div>
       <div>
         ${item.completed
-        ? `<span style="color:var(--success-color); font-weight: bold;">✓ Done</span>`
-        : `<button class="primary-btn" onclick="document.dispatchEvent(new CustomEvent('start-topic', {detail: '${item.id}'}))">Focus Now</button>`
+        ? `<span style="color:var(--success-color); font-weight: bold;">✓ Complete</span>`
+        : `<button class="primary-btn" onclick="document.dispatchEvent(new CustomEvent('start-topic', {detail: '${item.id}'}))">Take Lesson</button>`
       }
       </div>
     `;
@@ -249,13 +249,13 @@ function prepareTimerFor(planItem) {
   state.isTimerRunning = false;
   clearInterval(state.timer);
 
-  els.currentFocusTopic.textContent = `Focusing on: ${planItem.topic}`;
+  els.currentFocusTopic.textContent = `Current Lesson: ${planItem.topic}`;
   updateTimerDisplay();
 
   els.startTimerBtn.classList.remove('hidden');
   els.pauseTimerBtn.classList.add('hidden');
   els.finishTimerBtn.classList.add('hidden');
-  els.startTimerBtn.textContent = "Start Focus";
+  els.startTimerBtn.textContent = "Start Lesson";
   els.startTimerBtn.classList.add('pulse-anim');
 
   switchView('timer');
@@ -306,7 +306,7 @@ async function finishTimerSession() {
 
   updateStatsPanel();
 
-  els.currentFocusTopic.textContent = `Session Complete! +1 Streak`;
+  els.currentFocusTopic.textContent = `Lesson Complete! +1 Learning Streak`;
   els.startTimerBtn.classList.add('hidden');
   els.pauseTimerBtn.classList.add('hidden');
   els.finishTimerBtn.classList.add('hidden');
@@ -362,9 +362,9 @@ function showNotification() {
   }
 
   const motivations = [
-    `You're scrolling, aren't you? It's time to tackle ${targetTopic}. Engage focus mode!`,
-    `A champion doesn't wait for the 'right time'. Drop in and conquer ${targetTopic} now.`,
-    `Your future self is begging you to work on ${targetTopic} right now. Let's go.`
+    `Class is waiting, student. It's time to tackle ${targetTopic}. Engage with the lesson!`,
+    `A top achiever doesn't wait for the 'right time'. Open your mind and conquer ${targetTopic} right now.`,
+    `I am monitoring your progress. Your future success requires you to work on ${targetTopic} immediately.`
   ];
 
   const msg = motivations[Math.floor(Math.random() * motivations.length)];
@@ -381,7 +381,7 @@ function showNotification() {
       prepareTimerFor(targetItem);
     } else {
       // Create a dummy ad-hoc plan item if no plan
-      prepareTimerFor({ id: 999, topic: "Ad-hoc Focus", duration: 25, completed: false });
+      prepareTimerFor({ id: 999, topic: "Ad-hoc Lesson", duration: 25, completed: false });
     }
 
     startTimer();
