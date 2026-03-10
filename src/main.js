@@ -299,7 +299,7 @@ function renderPlan() {
         <p>Focused practice session on ${item.topic} taking roughly ${item.duration} minutes.</p>
         <div class="text-sm color-muted">
           ${item.completed
-        ? '<span style="color:var(--color-fg-success)">🔨 Completed</span>'
+        ? '<span style="color:var(--color-fg-success)">🔥 Completed</span>'
         : '<span style="color:var(--color-fg-warn)">⏳ In Progress</span>'}
         </div>
       </div>
