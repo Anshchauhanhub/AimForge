@@ -4,120 +4,226 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Jovi | Your AI Instructor</title>
+  <title>AimForge | Your Developer Journey</title>
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/src/style.css">
 </head>
 
-<body class="dark-theme">
+<body class="github-dark">
   <div id="app" class="app-container">
 
-    <!-- Main App Shell -->
-    <div id="appContent" class="app-content-wrapper">
-      <!-- Sidebar -->
-      <aside class="sidebar glass-panel">
-        <div class="logo-area">
-          <div class="jovi-avatar">
-            <div class="jovi-core"></div>
-            <div class="jovi-ring"></div>
+    <!-- Top Navigation Header -->
+    <header class="app-header">
+      <div class="header-logo">
+        <img src="/logo.png" alt="AimForge Logo"
+          style="height: 32px; width: 32px; object-fit: cover; border-radius: 6px;">
+        <span>AimForge</span>
+      </div>
+    </header>
+
+    <div class="main-layout">
+      <!-- Profile Sidebar -->
+      <aside class="profile-sidebar">
+        <div class="avatar-container">
+          <img src="https://avatars.githubusercontent.com/u/9919?s=200&v=4" alt="User Avatar" class="profile-avatar">
+          <div class="user-status">🎯</div>
+        </div>
+        <h1 class="profile-name">Student Developer</h1>
+        <p class="profile-username">@learning-dev</p>
+        <p class="profile-bio">Consistently building and mastering new skills. Practice makes perfect.</p>
+
+        <div class="profile-stats">
+          <div class="stat">
+            <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" class="octicon">
+              <path fill-rule="evenodd"
+                d="M10.5 5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Zm.061 3.073a4 4 0 1 0-5.123 0 6.004 6.004 0 0 0-3.431 5.142.75.75 0 0 0 1.498.07 4.5 4.5 0 0 1 8.99 0 .75.75 0 1 0 1.498-.07 6.005 6.005 0 0 0-3.432-5.142Z">
+              </path>
+            </svg>
+            <span class="stat-count">0</span> <span class="stat-label">followers</span>
           </div>
-          <h1>Jovi</h1>
+          <div class="stat">
+            <span class="stat-count">0</span> <span class="stat-label">following</span>
+          </div>
         </div>
 
-        <div class="stats-area">
-          <div class="stat-card">
-            <h3>Learning Streak</h3>
-            <div class="streak-count" id="streakCounter">0</div>
-            <p class="stat-label">Consecutive Days</p>
+        <div class="achievements-section">
+          <h3>Achievements</h3>
+          <div class="achievement-item">
+            <span class="achievement-icon">🔥</span>
+            <div>
+              <div class="achievement-title">Current Streak</div>
+              <div class="achievement-value" id="streakCounter">0 Days</div>
+            </div>
           </div>
-
-          <div class="stat-card">
-            <h3>Lessons Completed</h3>
-            <div class="session-count" id="sessionCounter">0</div>
-            <p class="stat-label">Total Classes</p>
+          <div class="achievement-item">
+            <span class="achievement-icon">📚</span>
+            <div>
+              <div class="achievement-title">Total Lessons</div>
+              <div class="achievement-value" id="sessionCounter">0 Completed</div>
+            </div>
           </div>
         </div>
-
-        <nav class="main-nav">
-          <button class="nav-btn active" data-view="chat">
-            <span class="icon">💬</span> Consult Jovi
-          </button>
-          <button class="nav-btn" data-view="plan">
-            <span class="icon">📋</span> Lesson Plan
-          </button>
-          <button class="nav-btn" data-view="timer">
-            <span class="icon">⏱️</span> Classroom
-          </button>
-          <div style="flex:1"></div>
-        </nav>
       </aside>
 
       <!-- Main Content Area -->
-      <main class="main-content">
-        <!-- Chat View -->
-        <section id="view-chat" class="view active-view">
-          <header class="view-header">
-            <h2>AI Instructor Terminal</h2>
-            <p>Tell Jovi your primary aim or goal. I will create your pathway to success.</p>
-          </header>
-          <div class="chat-container glass-panel">
-            <div class="chat-messages" id="chatMessages">
-              <div class="message ai-message">
-                <div class="message-content">Hello! I am Jovi, your personal AI instructor powered by Vivo. What is your
-                  aim for today? Let me guide you to achieve it.
-                  (e.g., "I want to master React JS" or "Teach me advanced Data Structures")</div>
+      <main class="content-area">
+        <!-- Tab Navigation -->
+        <nav class="tab-nav">
+          <button class="tab-btn active" data-view="overview">
+            <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16">
+              <path fill-rule="evenodd"
+                d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-.75.75h-2.5a.75.75 0 0 1 0-1.5h1.75v-2h-8a1 1 0 0 0-.714 1.7.75.75 0 1 1-1.072 1.05A2.495 2.495 0 0 1 2 11.5v-9Zm10.5-1V9h-8c-.356 0-.694.074-1 .208V2.5a1 1 0 0 1 1-1h8ZM5 12.25v3.25a.25.25 0 0 0 .4.2l1.45-1.087a.25.25 0 0 1 .3 0L8.6 15.7a.25.25 0 0 0 .4-.2v-3.25a.25.25 0 0 0-.25-.25h-3.5a.25.25 0 0 0-.25.25Z">
+              </path>
+            </svg>
+            Overview
+          </button>
+          <button class="tab-btn" data-view="goals">
+            <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16">
+              <path fill-rule="evenodd"
+                d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-.75.75h-2.5a.75.75 0 0 1 0-1.5h1.75v-2h-8a1 1 0 0 0-.714 1.7.75.75 0 1 1-1.072 1.05A2.495 2.495 0 0 1 2 11.5v-9Zm10.5-1V9h-8c-.356 0-.694.074-1 .208V2.5a1 1 0 0 1 1-1h8ZM5 12.25v3.25a.25.25 0 0 0 .4.2l1.45-1.087a.25.25 0 0 1 .3 0L8.6 15.7a.25.25 0 0 0 .4-.2v-3.25a.25.25 0 0 0-.25-.25h-3.5a.25.25 0 0 0-.25.25Z">
+              </path>
+            </svg>
+            Goals <span class="badge" id="goalsBadge">0</span>
+          </button>
+          <button class="tab-btn" data-view="practice">
+            <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16">
+              <path fill-rule="evenodd"
+                d="m11.536 3.464-5.068 5.068a1.5 1.5 0 1 1-2.121-2.121l5.068-5.068a3 3 0 0 1 4.242 4.242l-2.094 2.095a.75.75 0 0 1-1.06-1.061l2.094-2.094a1.5 1.5 0 0 0-2.121-2.121Z">
+              </path>
+              <path fill-rule="evenodd"
+                d="m4.464 12.536 5.068-5.068a1.5 1.5 0 0 1 2.121 2.121l-5.068 5.068a3 3 0 0 1-4.242-4.242l2.094-2.095a.75.75 0 1 1 1.06 1.06l-2.094 2.095a1.5 1.5 0 0 0 2.121 2.121Z">
+              </path>
+            </svg>
+            Practice
+          </button>
+        </nav>
+
+        <div class="tab-content-wrapper">
+          <!-- Overview View -->
+          <section id="view-overview" class="view active-view">
+            <h2 class="section-title">Pinned Goals</h2>
+            <!-- Reuse plan item styling for pinned goals -->
+            <div class="pinned-goals-grid" id="pinnedGoalsGrid">
+              <!-- Dynamically populated or skeleton -->
+              <div class="pinned-goal-card empty-card">
+                <p class="text-sm">No goals in progress.</p>
               </div>
             </div>
-            <div class="chat-input-area">
-              <input type="text" id="chatInput" placeholder="State your aim..." autocomplete="off" />
-              <button id="sendChatBtn" class="primary-btn">Ask Jovi</button>
+
+            <div class="contributions-section">
+              <h2 class="section-title">Consistency Graph</h2>
+              <div class="heatmap-container border-panel">
+                <div class="heatmap-header">
+                  <span>Learning activity over the last year</span>
+                </div>
+                <div class="heatmap-grid" id="heatmapGrid">
+                  <!-- Grid cells dynamically generated via JS -->
+                </div>
+                <div class="heatmap-footer">
+                  <a href="#">Learn how we count contributions</a>
+                  <div class="heatmap-legend">
+                    <span>Less</span>
+                    <ul class="legend-colors">
+                      <li style="background-color: var(--color-calendar-bg)"></li>
+                      <li style="background-color: var(--color-calendar-graph-day-L1)"></li>
+                      <li style="background-color: var(--color-calendar-graph-day-L2)"></li>
+                      <li style="background-color: var(--color-calendar-graph-day-L3)"></li>
+                      <li style="background-color: var(--color-calendar-graph-day-L4)"></li>
+                    </ul>
+                    <span>More</span>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-        </section>
 
-        <!-- Plan View -->
-        <section id="view-plan" class="view hidden-view">
-          <header class="view-header">
-            <h2>Lesson Plan</h2>
-            <p>Your structured curriculum prepared by Jovi.</p>
-          </header>
-          <div class="plan-container glass-panel" id="planContainer">
-            <div class="empty-state">No curriculum assigned yet. Consult Jovi to begin!</div>
-          </div>
-        </section>
-
-        <!-- Timer View -->
-        <section id="view-timer" class="view hidden-view">
-          <header class="view-header">
-            <h2>Classroom Session</h2>
-            <p id="currentFocusTopic">Select a module from your Lesson Plan to start.</p>
-          </header>
-          <div class="timer-container glass-panel">
-            <div class="timer-display" id="timerDisplay">25:00</div>
-            <div class="timer-controls">
-              <button id="startTimerBtn" class="primary-btn pulse-anim">Start Lesson</button>
-              <button id="pauseTimerBtn" class="secondary-btn hidden">Pause</button>
-              <button id="finishTimerBtn" class="success-btn hidden">Conclude Class</button>
+            <div class="recent-activity-section">
+              <h2 class="section-title">Recent Activity</h2>
+              <div class="activity-timeline border-panel" id="activityTimeline">
+                <div class="activity-item text-sm">Created learning tracker account. Welcome! 🚀</div>
+              </div>
             </div>
-          </div>
-        </section>
-      </main>
+          </section>
 
-    </div> <!-- End App Content -->
+          <!-- Goals View (Equivalent to Repositories / Plan) -->
+          <section id="view-goals" class="view hidden-view">
+            <div class="goals-header">
+              <input type="text" placeholder="Find a goal..." class="gh-input search-input">
+              <button class="gh-btn primary"
+                onclick="document.querySelector('.tab-btn[data-view=\'practice\']').click()">New Goal (Ask AI)</button>
+            </div>
 
-    <!-- Notification Overlay -->
-    <div id="notificationOverlay" class="notification-overlay hidden">
-      <div class="notification-card glass-panel pop-in">
-        <div class="notif-header">
-          <span class="notif-icon">💡</span>
-          <span>Jovi Instructor</span>
+            <div class="plan-container" id="planContainer">
+              <div class="empty-state text-sm">No curriculum assigned yet. Consult the AI in the Practice tab to begin!
+              </div>
+            </div>
+          </section>
+
+          <!-- Practice View (Split screen AI Chat & Timer) -->
+          <section id="view-practice" class="view hidden-view">
+            <div class="practice-split-layout">
+              <!-- Left: AI Guide -->
+              <div class="ai-chat-panel border-panel">
+                <header class="panel-header">
+                  <h3><svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" class="octicon">
+                      <path d="M11 2h2v1H8v2h5v1H8v2h6v2H1v-2h6V6H1V5h6V3H2V2h9Z"></path>
+                    </svg> Practice Copilot</h3>
+                  <span class="text-sm color-muted">Powered by AI</span>
+                </header>
+                <div class="chat-messages" id="chatMessages">
+                  <div class="message ai-message">
+                    <div class="message-content">Hello! I am your learning copilot. What is your aim for today? Let me
+                      formulate a plan for you.</div>
+                  </div>
+                </div>
+                <div class="chat-input-area">
+                  <input type="text" id="chatInput" placeholder="State your aim..." autocomplete="off"
+                    class="gh-input text-sm" />
+                  <button id="sendChatBtn" class="gh-btn primary">Ask</button>
+                </div>
+              </div>
+
+              <!-- Right: Focus/Timer -->
+              <div class="focus-panel border-panel">
+                <header class="panel-header">
+                  <h3><svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16" class="octicon">
+                      <path
+                        d="M8 2a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm0-2a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7ZM1.5 12.5A2.5 2.5 0 0 1 4 10h8a2.5 2.5 0 0 1 2.5 2.5v2H1.5v-2Z">
+                      </path>
+                    </svg> Active Session</h3>
+                </header>
+                <div class="timer-container" id="timerSection">
+                  <p id="currentFocusTopic" class="text-sm color-muted mb-4">Select a goal to start learning.</p>
+                  <div class="timer-display" id="timerDisplay">25:00</div>
+                  <div class="timer-controls">
+                    <button id="startTimerBtn" class="gh-btn primary hidden">Start Lesson</button>
+                    <button id="pauseTimerBtn" class="gh-btn hidden">Pause</button>
+                    <button id="finishTimerBtn" class="gh-btn success-btn hidden">Complete</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
-        <h3 id="notifTitle">Class is in session!</h3>
-        <p id="notifMessage">You are straying from your curriculum. Come back immediately and master your topic.</p>
-        <button id="bypassToTimerBtn" class="primary-btn w-full">Enter Classroom</button>
+      </main>
+    </div> <!-- End Main Layout -->
+
+    <!-- Notification Overlay (Repurposed for softer Github-like toast) -->
+    <div id="notificationOverlay" class="toast-container hidden">
+      <div class="gh-toast">
+        <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16"
+          class="color-fg-accent octicon">
+          <path
+            d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm6.5-.25A.75.75 0 0 1 7.25 7h1v3.25a.75.75 0 0 1-1.5 0v-2h-.25a.75.75 0 0 1-.75-.75ZM8 2.875a1.125 1.125 0 1 1 0 2.25 1.125 1.125 0 0 1 0-2.25Z">
+          </path>
+        </svg>
+        <div class="toast-content">
+          <h4 id="notifTitle">Reminder</h4>
+          <p id="notifMessage">You're falling behind your goals! Dive back into practice.</p>
+        </div>
+        <button id="bypassToTimerBtn" class="gh-btn primary btn-sm">Jump In</button>
       </div>
     </div>
   </div>
