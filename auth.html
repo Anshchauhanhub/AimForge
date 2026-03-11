@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AimForge | Sign In</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/src/auth.css">
+</head>
+
+<body>
+    <div class="auth-bg">
+        <!-- Animated floating fire particles -->
+        <div class="particles" id="particles"></div>
+
+        <div class="auth-container">
+            <!-- Logo -->
+            <div class="auth-logo">
+                <img src="/logo.png" alt="AimForge Logo">
+                <h1>AimForge</h1>
+                <p class="tagline">Forge your path. Ignite your skills.</p>
+            </div>
+
+            <!-- Tab Switch -->
+            <div class="auth-tabs">
+                <button class="auth-tab active" data-tab="login" id="loginTab">Sign In</button>
+                <button class="auth-tab" data-tab="signup" id="signupTab">Sign Up</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm" class="auth-form active-form">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" placeholder="you@example.com" required autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" placeholder="Enter your password" required
+                        autocomplete="current-password">
+                </div>
+                <button type="submit" class="auth-submit-btn" id="loginBtn">
+                    <span class="btn-text">Sign In</span>
+                    <span class="btn-loader hidden">
+                        <span class="spinner"></span>
+                    </span>
+                </button>
+            </form>
+
+            <!-- Signup Form -->
+            <form id="signupForm" class="auth-form hidden-form">
+                <div class="form-group">
+                    <label for="signupEmail">Email</label>
+                    <input type="email" id="signupEmail" placeholder="you@example.com" required autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label for="signupUsername">Username</label>
+                    <input type="text" id="signupUsername" placeholder="Choose a username" required
+                        autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" placeholder="Create a password (min 6 chars)" required
+                        minlength="6" autocomplete="new-password">
+                </div>
+                <button type="submit" class="auth-submit-btn" id="signupBtn">
+                    <span class="btn-text">Create Account</span>
+                    <span class="btn-loader hidden">
+                        <span class="spinner"></span>
+                    </span>
+                </button>
+            </form>
+
+            <!-- Error / Success messages -->
+            <div id="authMessage" class="auth-message hidden"></div>
+
+            <div class="auth-footer">
+                <p>By continuing, you agree to AimForge's Terms of Service.</p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="/src/auth.js"></script>
+</body>
+
+</html>
