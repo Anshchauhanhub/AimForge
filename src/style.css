@@ -23,11 +23,11 @@
   --color-btn-primary-border: rgba(240, 246, 252, 0.1);
   --color-btn-primary-hover-bg: #2ea043;
 
-  --color-calendar-bg: #161b22;
-  --color-calendar-graph-day-L1: #0e4429;
-  --color-calendar-graph-day-L2: #006d32;
-  --color-calendar-graph-day-L3: #26a641;
-  --color-calendar-graph-day-L4: #39d353;
+  --color-calendar-bg: #2d333b;
+  --color-calendar-graph-day-L1: linear-gradient(to top, rgba(255, 215, 0, 0.4), rgba(255, 69, 0, 0.4));
+  --color-calendar-graph-day-L2: linear-gradient(to top, rgba(255, 215, 0, 0.6), rgba(255, 69, 0, 0.6));
+  --color-calendar-graph-day-L3: linear-gradient(to top, rgba(255, 215, 0, 0.8), rgba(255, 69, 0, 0.8));
+  --color-calendar-graph-day-L4: linear-gradient(to top, rgba(255, 215, 0, 1), rgba(255, 69, 0, 1));
 
   --font-family-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
   --font-family-mono: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
@@ -162,12 +162,12 @@ a:hover {
 }
 
 .gh-btn.success-btn {
-  background-color: var(--color-calendar-graph-day-L3);
+  background: var(--color-calendar-graph-day-L3);
   color: #fff;
 }
 
 .gh-btn.success-btn:hover {
-  background-color: var(--color-calendar-graph-day-L4);
+  background: var(--color-calendar-graph-day-L4);
 }
 
 .btn-sm {
@@ -449,35 +449,37 @@ a:hover {
 
 .heatmap-grid {
   display: grid;
-  grid-template-columns: repeat(53, 11px);
-  grid-template-rows: repeat(7, 11px);
+  grid-template-columns: repeat(53, 16px);
+  grid-template-rows: repeat(7, 16px);
   gap: 3px;
   overflow-x: auto;
   padding-bottom: 8px;
 }
 
 .heatmap-cell {
-  width: 11px;
-  height: 11px;
+  width: 16px;
+  height: 16px;
   background-color: var(--color-calendar-bg);
-  border-radius: 2px;
-  border: 1px solid rgba(27, 31, 35, 0.06);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M11.66 21c-3.13-.57-5.59-4-4.88-7.85 1 1 2.38 1.48 3.53.64.92-.66 1.45-1.95 1.13-3.61C14.07 10.97 17 13.9 17 17.65c0 4.19-2.9 6-5.34 3.35zM12.01 22A6.99 6.99 0 0 0 19 15c0-3.64-3.59-6.3-4.52-10 0 0 1.25 1.5 1.25 3.5 0 1.21-.6 2.37-1.5 3.12-1 .82-2.31 1.05-3.5.76a4.8 4.8 0 0 1-2.9-2.08C6.35 12.3 5 13.56 5 15c0 3.86 3.14 7 7.01 7z' fill='currentColor'/%3E%3C/svg%3E") no-repeat center;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M11.66 21c-3.13-.57-5.59-4-4.88-7.85 1 1 2.38 1.48 3.53.64.92-.66 1.45-1.95 1.13-3.61C14.07 10.97 17 13.9 17 17.65c0 4.19-2.9 6-5.34 3.35zM12.01 22A6.99 6.99 0 0 0 19 15c0-3.64-3.59-6.3-4.52-10 0 0 1.25 1.5 1.25 3.5 0 1.21-.6 2.37-1.5 3.12-1 .82-2.31 1.05-3.5.76a4.8 4.8 0 0 1-2.9-2.08C6.35 12.3 5 13.56 5 15c0 3.86 3.14 7 7.01 7z' fill='currentColor'/%3E%3C/svg%3E") no-repeat center;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
 }
 
 .heatmap-cell[data-level="1"] {
-  background-color: var(--color-calendar-graph-day-L1);
+  background: var(--color-calendar-graph-day-L1);
 }
 
 .heatmap-cell[data-level="2"] {
-  background-color: var(--color-calendar-graph-day-L2);
+  background: var(--color-calendar-graph-day-L2);
 }
 
 .heatmap-cell[data-level="3"] {
-  background-color: var(--color-calendar-graph-day-L3);
+  background: var(--color-calendar-graph-day-L3);
 }
 
 .heatmap-cell[data-level="4"] {
-  background-color: var(--color-calendar-graph-day-L4);
+  background: var(--color-calendar-graph-day-L4);
 }
 
 .heatmap-footer {
@@ -502,9 +504,12 @@ a:hover {
 }
 
 .legend-colors li {
-  width: 11px;
-  height: 11px;
-  border-radius: 2px;
+  width: 16px;
+  height: 16px;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M11.66 21c-3.13-.57-5.59-4-4.88-7.85 1 1 2.38 1.48 3.53.64.92-.66 1.45-1.95 1.13-3.61C14.07 10.97 17 13.9 17 17.65c0 4.19-2.9 6-5.34 3.35zM12.01 22A6.99 6.99 0 0 0 19 15c0-3.64-3.59-6.3-4.52-10 0 0 1.25 1.5 1.25 3.5 0 1.21-.6 2.37-1.5 3.12-1 .82-2.31 1.05-3.5.76a4.8 4.8 0 0 1-2.9-2.08C6.35 12.3 5 13.56 5 15c0 3.86 3.14 7 7.01 7z' fill='currentColor'/%3E%3C/svg%3E") no-repeat center;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M11.66 21c-3.13-.57-5.59-4-4.88-7.85 1 1 2.38 1.48 3.53.64.92-.66 1.45-1.95 1.13-3.61C14.07 10.97 17 13.9 17 17.65c0 4.19-2.9 6-5.34 3.35zM12.01 22A6.99 6.99 0 0 0 19 15c0-3.64-3.59-6.3-4.52-10 0 0 1.25 1.5 1.25 3.5 0 1.21-.6 2.37-1.5 3.12-1 .82-2.31 1.05-3.5.76a4.8 4.8 0 0 1-2.9-2.08C6.35 12.3 5 13.56 5 15c0 3.86 3.14 7 7.01 7z' fill='currentColor'/%3E%3C/svg%3E") no-repeat center;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
 }
 
 /* Activity Timeline */

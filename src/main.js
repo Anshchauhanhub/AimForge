@@ -299,8 +299,8 @@ function renderPlan() {
         <p>Focused practice session on ${item.topic} taking roughly ${item.duration} minutes.</p>
         <div class="text-sm color-muted">
           ${item.completed
-        ? '<span style="color:var(--color-fg-success)">● Completed</span>'
-        : '<span style="color:var(--color-fg-warn)">● In Progress</span>'}
+        ? '<span style="color:var(--color-fg-success)">🔥 Completed</span>'
+        : '<span style="color:var(--color-fg-warn)">⏳ In Progress</span>'}
         </div>
       </div>
       <div>
@@ -444,7 +444,7 @@ function showNotification() {
   const motivations = [
     `Time to contribute! Open your mind and conquer ${targetTopic} right now.`,
     `Consistency is key. Jump in to practice ${targetTopic}.`,
-    `Your heatmap is waiting to be painted green. Start working on ${targetTopic}!`
+    `Your heatmap is waiting to be ignited. Start working on ${targetTopic}!`
   ];
 
   const msg = motivations[Math.floor(Math.random() * motivations.length)];
