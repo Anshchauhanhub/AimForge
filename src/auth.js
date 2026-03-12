@@ -59,8 +59,25 @@ loginForm.addEventListener('submit', async (e) => {
             throw new Error(data.detail || 'Login failed');
         }
 
+        // Save token and username
         localStorage.setItem('aimforge_token', data.token);
         localStorage.setItem('aimforge_username', data.username);
+
+        // Quick verify: make sure the token actually works before redirecting
+        const verifyRes = await fetch(`${API_BASE}/api/me`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${data.token}`
+            }
+        });
+
+        if (!verifyRes.ok) {
+            console.error('Token verification failed after login!', verifyRes.status);
+            localStorage.removeItem('aimforge_token');
+            localStorage.removeItem('aimforge_username');
+            throw new Error('Authentication error - token invalid. Please try again.');
+        }
+
         showMessage('Login successful! Redirecting...', 'success');
 
         setTimeout(() => {
@@ -99,8 +116,25 @@ signupForm.addEventListener('submit', async (e) => {
             throw new Error(data.detail || 'Registration failed');
         }
 
+        // Save token and username
         localStorage.setItem('aimforge_token', data.token);
         localStorage.setItem('aimforge_username', data.username);
+
+        // Quick verify: make sure the token actually works before redirecting
+        const verifyRes = await fetch(`${API_BASE}/api/me`, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${data.token}`
+            }
+        });
+
+        if (!verifyRes.ok) {
+            console.error('Token verification failed after signup!', verifyRes.status);
+            localStorage.removeItem('aimforge_token');
+            localStorage.removeItem('aimforge_username');
+            throw new Error('Authentication error - token invalid. Please try again.');
+        }
+
         showMessage('Account created! Redirecting...', 'success');
 
         setTimeout(() => {

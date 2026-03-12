@@ -1,11 +1,17 @@
+import os
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Load .env FIRST before any other imports
+env_path = Path(__file__).resolve().parent.parent / '.env'
+load_dotenv(dotenv_path=env_path)
+
 from fastapi import FastAPI, HTTPException, Depends, status
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import Optional
-import os
 import json
-from dotenv import load_dotenv
 from huggingface_hub import InferenceClient
 
 import models
@@ -14,8 +20,6 @@ from auth import hash_password, verify_password, create_access_token, get_curren
 
 # Create DB tables
 models.Base.metadata.create_all(bind=engine)
-
-load_dotenv()
 
 app = FastAPI()
 
@@ -233,6 +237,15 @@ Respond ONLY with a valid JSON object matching this schema. Do NOT include markd
         except:
             pass
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ==================
+# Debug endpoint
+# ==================
+@app.get("/api/debug/ping")
+def ping():
+    from auth import SECRET_KEY as sk
+    return {"status": "ok", "secret_key_prefix": sk[:10]}
 
 
 if __name__ == "__main__":

@@ -105,6 +105,7 @@ async function loadProfile() {
       headers: authHeaders()
     });
     if (res.status === 401) {
+      console.error('[AUTH] 401 from /api/me/profile - token is invalid, logging out');
       logout();
       return;
     }
@@ -118,8 +119,16 @@ async function loadProfile() {
     if (profile.avatar_url && els.profileAvatar) {
       els.profileAvatar.src = profile.avatar_url;
     }
+    console.log('[AUTH] Profile loaded OK:', profile.username);
   } catch (e) {
-    console.error("Failed to load profile:", e);
+    // Network error - do NOT logout
+    console.warn('[AUTH] Network error loading profile (not logging out):', e.message);
+    const cached = localStorage.getItem('aimforge_username');
+    if (cached) {
+      els.profileDisplayName.textContent = cached;
+      els.profileUsername.textContent = `@${cached}`;
+      els.headerUsername.textContent = cached;
+    }
   }
 }
 
@@ -129,6 +138,7 @@ async function loadUserData() {
       headers: authHeaders()
     });
     if (statsRes.status === 401) {
+      console.error('[AUTH] 401 from /api/me - token is invalid, logging out');
       logout();
       return;
     }
@@ -145,10 +155,13 @@ async function loadUserData() {
     }
 
     updateStatsPanel();
+    console.log('[AUTH] User data loaded OK');
   } catch (e) {
-    console.error("Failed to load global user data:", e);
+    // Network error - do NOT logout
+    console.warn('[AUTH] Network error loading user data (not logging out):', e.message);
   }
 }
+
 
 function updateStatsPanel() {
   els.streakCounter.textContent = `${state.streak} Days`;
