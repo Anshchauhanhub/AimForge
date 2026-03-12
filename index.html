@@ -22,6 +22,10 @@
           style="height: 32px; width: 32px; object-fit: cover; border-radius: 6px;">
         <span>AimForge</span>
       </div>
+      <div class="header-actions">
+        <span class="header-user" id="headerUsername"></span>
+        <button class="gh-btn" id="logoutBtn" style="font-size:12px;">Sign Out</button>
+      </div>
     </header>
 
     <div class="main-layout">
@@ -31,9 +35,9 @@
           <img src="https://avatars.githubusercontent.com/u/9919?s=200&v=4" alt="User Avatar" class="profile-avatar">
           <div class="user-status">🎯</div>
         </div>
-        <h1 class="profile-name">Student Developer</h1>
-        <p class="profile-username">@learning-dev</p>
-        <p class="profile-bio">Consistently building and mastering new skills. Practice makes perfect.</p>
+        <h1 class="profile-name" id="profileDisplayName">Loading...</h1>
+        <p class="profile-username" id="profileUsername">@...</p>
+        <p class="profile-bio" id="profileBio">Loading profile...</p>
 
         <div class="profile-stats">
           <div class="stat">

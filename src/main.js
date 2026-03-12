@@ -1,3 +1,28 @@
+// Auth helper
+const API_BASE = 'http://127.0.0.1:8000';
+
+function getToken() {
+  return localStorage.getItem('aimforge_token');
+}
+
+function authHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${getToken()}`
+  };
+}
+
+function logout() {
+  localStorage.removeItem('aimforge_token');
+  localStorage.removeItem('aimforge_username');
+  window.location.href = '/auth.html';
+}
+
+// Redirect to auth if no token
+if (!getToken()) {
+  window.location.href = '/auth.html';
+}
+
 // State Management
 const state = {
   streak: 0,
@@ -46,10 +71,19 @@ const els = {
   notifTitle: document.getElementById('notifTitle'),
   notifMessage: document.getElementById('notifMessage'),
   bypassToTimerBtn: document.getElementById('bypassToTimerBtn'),
+
+  // Profile
+  profileDisplayName: document.getElementById('profileDisplayName'),
+  profileUsername: document.getElementById('profileUsername'),
+  profileBio: document.getElementById('profileBio'),
+  headerUsername: document.getElementById('headerUsername'),
+  logoutBtn: document.getElementById('logoutBtn'),
+  profileAvatar: document.querySelector('.profile-avatar'),
 };
 
 // Initialize
 async function init() {
+  await loadProfile();
   await loadUserData();
 
   updateStatsPanel();
@@ -65,24 +99,69 @@ async function init() {
   scheduleRandomNotification();
 }
 
+async function loadProfile() {
+  try {
+    const res = await fetch(`${API_BASE}/api/me/profile`, {
+      headers: authHeaders()
+    });
+    if (res.status === 401) {
+      console.error('[AUTH] 401 from /api/me/profile - token is invalid, logging out');
+      logout();
+      return;
+    }
+    if (!res.ok) throw new Error('Could not fetch profile');
+    const profile = await res.json();
+
+    els.profileDisplayName.textContent = profile.display_name || profile.username;
+    els.profileUsername.textContent = `@${profile.username}`;
+    els.profileBio.textContent = profile.bio || 'No bio set yet.';
+    els.headerUsername.textContent = profile.username;
+    if (profile.avatar_url && els.profileAvatar) {
+      els.profileAvatar.src = profile.avatar_url;
+    }
+    console.log('[AUTH] Profile loaded OK:', profile.username);
+  } catch (e) {
+    // Network error - do NOT logout
+    console.warn('[AUTH] Network error loading profile (not logging out):', e.message);
+    const cached = localStorage.getItem('aimforge_username');
+    if (cached) {
+      els.profileDisplayName.textContent = cached;
+      els.profileUsername.textContent = `@${cached}`;
+      els.headerUsername.textContent = cached;
+    }
+  }
+}
+
 async function loadUserData() {
   try {
-    const statsRes = await fetch('http://127.0.0.1:8000/api/me');
+    const statsRes = await fetch(`${API_BASE}/api/me`, {
+      headers: authHeaders()
+    });
+    if (statsRes.status === 401) {
+      console.error('[AUTH] 401 from /api/me - token is invalid, logging out');
+      logout();
+      return;
+    }
     if (!statsRes.ok) throw new Error('Could not fetch user data');
     const stats = await statsRes.json();
     state.streak = stats.streak;
     state.sessions = stats.sessions;
 
-    const planRes = await fetch('http://127.0.0.1:8000/api/plan');
+    const planRes = await fetch(`${API_BASE}/api/plan`, {
+      headers: authHeaders()
+    });
     if (planRes.ok) {
       state.plan = await planRes.json();
     }
 
     updateStatsPanel();
+    console.log('[AUTH] User data loaded OK');
   } catch (e) {
-    console.error("Failed to load global user data:", e);
+    // Network error - do NOT logout
+    console.warn('[AUTH] Network error loading user data (not logging out):', e.message);
   }
 }
+
 
 function updateStatsPanel() {
   els.streakCounter.textContent = `${state.streak} Days`;
@@ -132,6 +211,9 @@ function setupEventListeners() {
 
   // Notification Bypass
   els.bypassToTimerBtn.addEventListener('click', bypassToTimer);
+
+  // Logout
+  els.logoutBtn.addEventListener('click', logout);
 }
 
 // ==============
@@ -141,25 +223,17 @@ function renderHeatmap() {
   els.heatmapGrid.innerHTML = '';
   // 53 cols * 7 rows = 371 cells
   const totalCells = 371;
-  const today = new Date();
-
-  // Make heatmap look slightly realistic based on streak and session data
-  // We'll mark the last `state.streak` continuous active cells.
-  // And randomly sprinkle older sessions.
 
   for (let i = 0; i < totalCells; i++) {
     const cell = document.createElement('div');
     cell.className = 'heatmap-cell';
 
-    // Logic to highlight recent activity based on streak
     const daysAgo = totalCells - 1 - i;
 
     if (daysAgo < state.streak) {
-      // Recent consecutive streak
-      cell.setAttribute('data-level', Math.floor(Math.random() * 3) + 2); // 2, 3, or 4
+      cell.setAttribute('data-level', Math.floor(Math.random() * 3) + 2);
     } else if (Math.random() < 0.15 && daysAgo < 200) {
-      // Random older activity
-      cell.setAttribute('data-level', Math.floor(Math.random() * 2) + 1); // 1 or 2
+      cell.setAttribute('data-level', Math.floor(Math.random() * 2) + 1);
     } else {
       cell.setAttribute('data-level', '0');
     }
@@ -234,17 +308,16 @@ function scrollToBottom(element) {
 
 async function generatePlanFromChat(userText, indicator) {
   try {
-    const response = await fetch('http://127.0.0.1:8000/api/chat', {
+    const response = await fetch(`${API_BASE}/api/chat`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: authHeaders(),
       body: JSON.stringify({ message: userText })
     });
 
     indicator.remove();
 
     if (!response.ok) {
+      if (response.status === 401) { logout(); return; }
       throw new Error(`API Error: ${response.status}`);
     }
 
@@ -256,11 +329,9 @@ async function generatePlanFromChat(userText, indicator) {
       duration: t.duration || 25
     }));
 
-    const saveRes = await fetch('http://127.0.0.1:8000/api/plan', {
+    const saveRes = await fetch(`${API_BASE}/api/plan`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: authHeaders(),
       body: JSON.stringify(newPlan)
     });
 
@@ -379,9 +450,8 @@ async function finishTimerSession() {
   clearInterval(state.timer);
   state.isTimerRunning = false;
 
-  // Gamification Logic
   state.sessions++;
-  state.streak++; // Simplification to guarantee streak bumps
+  state.streak++;
 
   updateStatsPanel();
   renderHeatmap();
@@ -395,20 +465,18 @@ async function finishTimerSession() {
 
   // Sync to backend
   try {
-    await fetch('http://127.0.0.1:8000/api/me/stats', {
+    await fetch(`${API_BASE}/api/me/stats`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: authHeaders(),
       body: JSON.stringify({ streak_add: 1, sessions_add: 1 })
     });
 
     if (state.activeTopic) {
       state.activeTopic.completed = true;
-      await fetch(`http://127.0.0.1:8000/api/plan/${state.activeTopic.id}`, {
-        method: 'PUT'
+      await fetch(`${API_BASE}/api/plan/${state.activeTopic.id}`, {
+        method: 'PUT',
+        headers: authHeaders()
       });
-      // Update badge
       updateStatsPanel();
     }
   } catch (err) {
@@ -469,7 +537,6 @@ function showNotification() {
 }
 
 function bypassToTimer() {
-  // defined inline above mostly, but this serves as a fallback 
   els.notificationOverlay.classList.add('hidden');
 }
 
