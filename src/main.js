@@ -85,7 +85,6 @@ const els = {
   postTitle: document.getElementById('postTitle'),
   postContent: document.getElementById('postContent'),
   submitPostBtn: document.getElementById('submitPostBtn'),
-  categorySelector: document.getElementById('categorySelector'),
 };
 
 // Initialize
@@ -228,12 +227,6 @@ function setupEventListeners() {
 
   // Community
   els.submitPostBtn.addEventListener('click', createPost);
-  els.categorySelector.querySelectorAll('.category-pill').forEach(pill => {
-    pill.addEventListener('click', () => {
-      els.categorySelector.querySelectorAll('.category-pill').forEach(p => p.classList.remove('active'));
-      pill.classList.add('active');
-    });
-  });
 }
 
 // ==============
@@ -564,15 +557,11 @@ function bypassToTimer() {
 // Community / Social Feed
 // ==============
 
-function getSelectedCategory() {
-  const active = els.categorySelector.querySelector('.category-pill.active');
-  return active ? active.dataset.cat : 'material';
-}
-
 async function createPost() {
   const title = els.postTitle.value.trim();
   const content = els.postContent.value.trim();
-  const category = getSelectedCategory();
+  const category = 'material'; // Server requires one, default it invisibly
+
 
   if (!title || !content) {
     alert('Please fill in both title and content.');
@@ -636,13 +625,6 @@ function renderFeed(posts) {
     card.className = 'post-card border-panel';
     card.dataset.postId = post.id;
 
-    const categoryMeta = {
-      material: { label: 'Study Material', cls: 'cat-material' },
-      achievement: { label: 'Achievement', cls: 'cat-achievement' },
-      struggle: { label: 'Struggle', cls: 'cat-struggle' },
-    };
-    const cat = categoryMeta[post.category] || categoryMeta.material;
-
     card.innerHTML = `
       <div class="post-header">
         <img class="post-avatar" src="${post.author?.avatar_url || 'https://avatars.githubusercontent.com/u/9919?s=200&v=4'}" alt="avatar">
@@ -650,7 +632,6 @@ function renderFeed(posts) {
           <span class="post-author-name">${post.author?.display_name || 'Unknown'}</span>
           <span class="post-meta">@${post.author?.username || '?'} · ${timeAgo(post.created_at)}</span>
         </div>
-        <span class="post-category-badge ${cat.cls}">${cat.label}</span>
       </div>
       <div class="post-body">
         <h4 class="post-title">${escapeHtml(post.title)}</h4>
