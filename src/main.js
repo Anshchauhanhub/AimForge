@@ -79,6 +79,13 @@ const els = {
   headerUsername: document.getElementById('headerUsername'),
   logoutBtn: document.getElementById('logoutBtn'),
   profileAvatar: document.querySelector('.profile-avatar'),
+
+  // Community
+  communityFeed: document.getElementById('communityFeed'),
+  postTitle: document.getElementById('postTitle'),
+  postContent: document.getElementById('postContent'),
+  submitPostBtn: document.getElementById('submitPostBtn'),
+  categorySelector: document.getElementById('categorySelector'),
 };
 
 // Initialize
@@ -191,6 +198,10 @@ function switchView(viewName) {
     renderPlan();
     renderPinnedGoals();
   }
+
+  if (viewName === 'community') {
+    loadFeed();
+  }
 }
 
 function setupEventListeners() {
@@ -214,6 +225,15 @@ function setupEventListeners() {
 
   // Logout
   els.logoutBtn.addEventListener('click', logout);
+
+  // Community
+  els.submitPostBtn.addEventListener('click', createPost);
+  els.categorySelector.querySelectorAll('.category-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      els.categorySelector.querySelectorAll('.category-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+    });
+  });
 }
 
 // ==============
@@ -538,6 +558,172 @@ function showNotification() {
 
 function bypassToTimer() {
   els.notificationOverlay.classList.add('hidden');
+}
+
+// ==============
+// Community / Social Feed
+// ==============
+
+function getSelectedCategory() {
+  const active = els.categorySelector.querySelector('.category-pill.active');
+  return active ? active.dataset.cat : 'material';
+}
+
+async function createPost() {
+  const title = els.postTitle.value.trim();
+  const content = els.postContent.value.trim();
+  const category = getSelectedCategory();
+
+  if (!title || !content) {
+    alert('Please fill in both title and content.');
+    return;
+  }
+
+  els.submitPostBtn.disabled = true;
+  els.submitPostBtn.textContent = 'Posting...';
+
+  try {
+    const res = await fetch(`${API_BASE}/api/posts`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({ title, content, category })
+    });
+
+    if (res.status === 401) { logout(); return; }
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || 'Failed to create post');
+    }
+
+    els.postTitle.value = '';
+    els.postContent.value = '';
+    await loadFeed();
+  } catch (err) {
+    alert(err.message);
+  } finally {
+    els.submitPostBtn.disabled = false;
+    els.submitPostBtn.innerHTML = `<svg aria-hidden="true" height="16" viewBox="0 0 16 16" width="16"><path d="M1.592 2.712 2.38 7.25h4.87a.75.75 0 1 1 0 1.5H2.38l-.788 4.538L13.929 8 1.592 2.712ZM.989 8 .064 2.68a1.341 1.341 0 0 1 1.85-1.462l13.402 5.744a1.13 1.13 0 0 1 0 2.076L1.913 14.782a1.341 1.341 0 0 1-1.85-1.463L.99 8Z" fill="currentColor"></path></svg> Post`;
+  }
+}
+
+async function loadFeed() {
+  try {
+    const res = await fetch(`${API_BASE}/api/posts`, {
+      headers: authHeaders()
+    });
+    if (res.status === 401) { logout(); return; }
+    if (!res.ok) throw new Error('Failed to load feed');
+
+    const posts = await res.json();
+    renderFeed(posts);
+  } catch (err) {
+    els.communityFeed.innerHTML = `<div class="feed-empty text-sm color-muted">Could not load posts. Is the server running?</div>`;
+  }
+}
+
+function renderFeed(posts) {
+  if (posts.length === 0) {
+    els.communityFeed.innerHTML = `
+      <div class="feed-empty">
+        <p>No posts yet. Be the first to share! 🚀</p>
+      </div>`;
+    return;
+  }
+
+  els.communityFeed.innerHTML = '';
+  posts.forEach(post => {
+    const card = document.createElement('div');
+    card.className = 'post-card border-panel';
+    card.dataset.postId = post.id;
+
+    const categoryMeta = {
+      material: { emoji: '📚', label: 'Study Material', cls: 'cat-material' },
+      achievement: { emoji: '🏆', label: 'Achievement', cls: 'cat-achievement' },
+      struggle: { emoji: '💪', label: 'Struggle', cls: 'cat-struggle' },
+    };
+    const cat = categoryMeta[post.category] || categoryMeta.material;
+
+    card.innerHTML = `
+      <div class="post-header">
+        <img class="post-avatar" src="${post.author?.avatar_url || 'https://avatars.githubusercontent.com/u/9919?s=200&v=4'}" alt="avatar">
+        <div class="post-author-info">
+          <span class="post-author-name">${post.author?.display_name || 'Unknown'}</span>
+          <span class="post-meta">@${post.author?.username || '?'} · ${timeAgo(post.created_at)}</span>
+        </div>
+        <span class="post-category-badge ${cat.cls}">${cat.emoji} ${cat.label}</span>
+      </div>
+      <div class="post-body">
+        <h4 class="post-title">${escapeHtml(post.title)}</h4>
+        <p class="post-content">${escapeHtml(post.content)}</p>
+      </div>
+      <div class="post-actions">
+        <button class="post-like-btn ${post.liked_by_me ? 'liked' : ''}" onclick="toggleLike(${post.id}, this)">
+          <svg height="16" viewBox="0 0 16 16" width="16"><path d="m8 14.25.345.666a.75.75 0 0 1-.69 0l-.008-.004-.018-.01a7.152 7.152 0 0 1-.31-.17 22.055 22.055 0 0 1-3.434-2.414C2.045 10.731 0 8.35 0 5.5 0 2.836 2.086 1 4.25 1 5.797 1 7.153 1.802 8 3.02 8.847 1.802 10.203 1 11.75 1 13.914 1 16 2.836 16 5.5c0 2.85-2.045 5.231-3.885 6.818a22.066 22.066 0 0 1-3.744 2.584l-.018.01-.006.003h-.002ZM4.25 2.5c-1.336 0-2.75 1.164-2.75 3 0 2.15 1.58 4.144 3.365 5.682A20.58 20.58 0 0 0 8 13.393a20.58 20.58 0 0 0 3.135-2.211C12.92 9.644 14.5 7.65 14.5 5.5c0-1.836-1.414-3-2.75-3-1.373 0-2.609.986-3.029 2.456a.749.749 0 0 1-1.442 0C6.859 3.486 5.623 2.5 4.25 2.5Z" fill="currentColor"></path></svg>
+          <span class="like-count">${post.likes_count}</span>
+        </button>
+        ${post.is_mine ? `<button class="post-delete-btn" onclick="deletePost(${post.id})">🗑️ Delete</button>` : ''}
+      </div>
+    `;
+    els.communityFeed.appendChild(card);
+  });
+}
+
+window.toggleLike = async function(postId, btn) {
+  try {
+    const res = await fetch(`${API_BASE}/api/posts/${postId}/like`, {
+      method: 'POST',
+      headers: authHeaders()
+    });
+    if (res.status === 401) { logout(); return; }
+    if (!res.ok) throw new Error('Failed to toggle like');
+
+    const data = await res.json();
+    btn.classList.toggle('liked', data.liked);
+    btn.querySelector('.like-count').textContent = data.likes_count;
+  } catch (err) {
+    console.error('Like error:', err);
+  }
+};
+
+window.deletePost = async function(postId) {
+  if (!confirm('Delete this post?')) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/api/posts/${postId}`, {
+      method: 'DELETE',
+      headers: authHeaders()
+    });
+    if (res.status === 401) { logout(); return; }
+    if (!res.ok) throw new Error('Failed to delete post');
+
+    const card = document.querySelector(`.post-card[data-post-id="${postId}"]`);
+    if (card) {
+      card.style.opacity = '0';
+      card.style.transform = 'scale(0.95)';
+      setTimeout(() => card.remove(), 300);
+    }
+  } catch (err) {
+    alert('Could not delete post.');
+  }
+};
+
+function timeAgo(isoString) {
+  if (!isoString) return 'just now';
+  const date = new Date(isoString + 'Z');
+  const now = new Date();
+  const seconds = Math.floor((now - date) / 1000);
+
+  if (seconds < 60) return 'just now';
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+  if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+  return date.toLocaleDateString();
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
 }
 
 // Kickoff
