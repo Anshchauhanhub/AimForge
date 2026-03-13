@@ -637,9 +637,9 @@ function renderFeed(posts) {
     card.dataset.postId = post.id;
 
     const categoryMeta = {
-      material: { emoji: '📚', label: 'Study Material', cls: 'cat-material' },
-      achievement: { emoji: '🏆', label: 'Achievement', cls: 'cat-achievement' },
-      struggle: { emoji: '💪', label: 'Struggle', cls: 'cat-struggle' },
+      material: { label: 'Study Material', cls: 'cat-material' },
+      achievement: { label: 'Achievement', cls: 'cat-achievement' },
+      struggle: { label: 'Struggle', cls: 'cat-struggle' },
     };
     const cat = categoryMeta[post.category] || categoryMeta.material;
 
@@ -650,7 +650,7 @@ function renderFeed(posts) {
           <span class="post-author-name">${post.author?.display_name || 'Unknown'}</span>
           <span class="post-meta">@${post.author?.username || '?'} · ${timeAgo(post.created_at)}</span>
         </div>
-        <span class="post-category-badge ${cat.cls}">${cat.emoji} ${cat.label}</span>
+        <span class="post-category-badge ${cat.cls}">${cat.label}</span>
       </div>
       <div class="post-body">
         <h4 class="post-title">${escapeHtml(post.title)}</h4>
