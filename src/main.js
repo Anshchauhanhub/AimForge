@@ -85,6 +85,11 @@ const els = {
   postTitle: document.getElementById('postTitle'),
   postContent: document.getElementById('postContent'),
   submitPostBtn: document.getElementById('submitPostBtn'),
+  postImageInput: document.getElementById('postImageInput'),
+  attachImageBtn: document.getElementById('attachImageBtn'),
+  imagePreviewContainer: document.getElementById('imagePreviewContainer'),
+  imagePreview: document.getElementById('imagePreview'),
+  removeImageBtn: document.getElementById('removeImageBtn'),
 };
 
 // Initialize
@@ -227,6 +232,9 @@ function setupEventListeners() {
 
   // Community
   els.submitPostBtn.addEventListener('click', createPost);
+  els.attachImageBtn.addEventListener('click', () => els.postImageInput.click());
+  els.postImageInput.addEventListener('change', handleImageSelection);
+  els.removeImageBtn.addEventListener('click', clearImageSelection);
 }
 
 // ==============
@@ -557,6 +565,33 @@ function bypassToTimer() {
 // Community / Social Feed
 // ==============
 
+let selectedImageFile = null;
+
+function handleImageSelection(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  if (!file.type.startsWith('image/')) {
+    alert('Please select a valid image file.');
+    return;
+  }
+
+  selectedImageFile = file;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    els.imagePreview.src = e.target.result;
+    els.imagePreviewContainer.classList.remove('hidden');
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearImageSelection() {
+  selectedImageFile = null;
+  els.postImageInput.value = '';
+  els.imagePreview.src = '';
+  els.imagePreviewContainer.classList.add('hidden');
+}
+
 async function createPost() {
   const title = els.postTitle.value.trim();
   const content = els.postContent.value.trim();
@@ -572,10 +607,31 @@ async function createPost() {
   els.submitPostBtn.textContent = 'Posting...';
 
   try {
+    let imageUrl = null;
+
+    // 1. Upload image if selected
+    if (selectedImageFile) {
+      const formData = new FormData();
+      formData.append('file', selectedImageFile);
+
+      const uploadRes = await fetch(`${API_BASE}/api/upload`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${getToken()}` }, // FormData sets own Content-Type
+        body: formData
+      });
+
+      if (uploadRes.status === 401) { logout(); return; }
+      if (!uploadRes.ok) throw new Error('Failed to upload image');
+      
+      const uploadData = await uploadRes.json();
+      imageUrl = uploadData.url;
+    }
+
+    // 2. Submit Post
     const res = await fetch(`${API_BASE}/api/posts`, {
       method: 'POST',
       headers: authHeaders(),
-      body: JSON.stringify({ title, content, category })
+      body: JSON.stringify({ title, content, category, image_url: imageUrl })
     });
 
     if (res.status === 401) { logout(); return; }
@@ -586,6 +642,7 @@ async function createPost() {
 
     els.postTitle.value = '';
     els.postContent.value = '';
+    clearImageSelection();
     await loadFeed();
   } catch (err) {
     alert(err.message);
@@ -636,6 +693,7 @@ function renderFeed(posts) {
       <div class="post-body">
         <h4 class="post-title">${escapeHtml(post.title)}</h4>
         <p class="post-content">${escapeHtml(post.content)}</p>
+        ${post.image_url ? `<img src="${API_BASE}${post.image_url}" alt="Post attachment" class="post-image">` : ''}
       </div>
       <div class="post-actions">
         <button class="post-like-btn ${post.liked_by_me ? 'liked' : ''}" onclick="toggleLike(${post.id}, this)">

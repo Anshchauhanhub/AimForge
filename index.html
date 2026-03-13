@@ -226,8 +226,22 @@
               <h3 class="composer-title">Share with the Community</h3>
               <input type="text" id="postTitle" class="gh-input" placeholder="Give your post a title..." maxlength="120">
               <textarea id="postContent" class="gh-input post-textarea" placeholder="Share what's on your mind..." rows="3"></textarea>
-              <div class="composer-actions">
-                <button id="submitPostBtn" class="gh-btn primary">
+              
+              <!-- Image Preview Area -->
+              <div id="imagePreviewContainer" class="hidden" style="position: relative; width: max-content; margin-top: 8px;">
+                <img id="imagePreview" src="" alt="Preview" style="max-height: 150px; border-radius: 6px; border: 1px solid var(--color-border-default);">
+                <button id="removeImageBtn" class="gh-btn btn-sm" style="position: absolute; top: -8px; right: -8px; border-radius: 50%; padding: 2px 6px; background: var(--color-bg-default);"><svg height="12" viewBox="0 0 16 16" width="12"><path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.749.749 0 0 1 1.275.326.749.749 0 0 1-.215.734L9.06 8l3.22 3.22a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215L8 9.06l-3.22 3.22a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06Z" fill="currentColor"></path></svg></button>
+              </div>
+
+              <div class="composer-actions" style="justify-content: space-between; align-items: center;">
+                <div>
+                  <input type="file" id="postImageInput" accept="image/*" class="hidden">
+                  <button id="attachImageBtn" class="gh-btn">
+                    <svg aria-hidden="true" height="16" viewBox="0 0 16 16" width="16"><path d="M1.75 2.5a.25.25 0 0 0-.25.25v10.5c0 .138.112.25.25.25h.94a.76.76 0 0 1 .03-.028l1.5-1.5a.75.75 0 0 1 1.06 0l5.046 5.046a.25.25 0 0 0 .174.072h4c.138 0 .25-.112.25-.25v-5.268a.76.76 0 0 0-.012-.116l-2.035-6.106a.25.25 0 0 0-.238-.17H1.75ZM0 2.75C0 1.784.784 1 1.75 1h10.5c.78 0 1.442.512 1.67 1.201l2.062 6.185A1.75 1.75 0 0 1 16 8.933v5.317A1.75 1.75 0 0 1 14.25 16H1.75A1.75 1.75 0 0 1 0 14.25ZM6 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0Zm-1.5 0a.5.5 0 1 0-1 0 .5.5 0 0 0 1 0Z" fill="currentColor"></path></svg>
+                    Attach Image
+                  </button>
+                </div>
+                <button class="gh-btn primary" id="submitPostBtn">
                   <svg aria-hidden="true" height="16" viewBox="0 0 16 16" width="16"><path d="M1.592 2.712 2.38 7.25h4.87a.75.75 0 1 1 0 1.5H2.38l-.788 4.538L13.929 8 1.592 2.712ZM.989 8 .064 2.68a1.341 1.341 0 0 1 1.85-1.462l13.402 5.744a1.13 1.13 0 0 1 0 2.076L1.913 14.782a1.341 1.341 0 0 1-1.85-1.463L.99 8Z" fill="currentColor"></path></svg>
                   Post
                 </button>

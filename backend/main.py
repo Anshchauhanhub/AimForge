@@ -6,10 +6,13 @@ from dotenv import load_dotenv
 env_path = Path(__file__).resolve().parent.parent / '.env'
 load_dotenv(dotenv_path=env_path)
 
-from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi import FastAPI, HTTPException, Depends, status, UploadFile, File
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
+import shutil
+import uuid
 from typing import Optional
 import json
 from huggingface_hub import InferenceClient
@@ -30,6 +33,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Serve static files from public directory
+app.mount("/uploads", StaticFiles(directory="../public/uploads"), name="uploads")
 
 HF_TOKEN = os.getenv("HF_TOKEN")
 client = InferenceClient(api_key=HF_TOKEN)
@@ -67,6 +73,7 @@ class PostCreate(BaseModel):
     category: str  # material, achievement, struggle
     title: str
     content: str
+    image_url: Optional[str] = None
 
 # ==================
 # Auth Endpoints
@@ -248,6 +255,26 @@ Respond ONLY with a valid JSON object matching this schema. Do NOT include markd
 # Social / Community Endpoints
 # ==================
 
+@app.post("/api/upload")
+def upload_image(file: UploadFile = File(...), current_user: models.User = Depends(get_current_user)):
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="File must be an image")
+    
+    # Create unique filename
+    ext = file.filename.split('.')[-1] if '.' in file.filename else 'jpg'
+    filename = f"{uuid.uuid4().hex}.{ext}"
+    
+    # Ensure directory exists
+    upload_dir = Path("../public/uploads")
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    
+    file_path = upload_dir / filename
+    
+    with file_path.open("wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+        
+    return {"url": f"/uploads/{filename}"}
+
 @app.post("/api/posts")
 def create_post(post: PostCreate, current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
     if post.category not in ("material", "achievement", "struggle"):
@@ -260,6 +287,7 @@ def create_post(post: PostCreate, current_user: models.User = Depends(get_curren
         category=post.category,
         title=post.title.strip(),
         content=post.content.strip(),
+        image_url=post.image_url,
     )
     db.add(db_post)
     db.commit()
@@ -270,6 +298,7 @@ def create_post(post: PostCreate, current_user: models.User = Depends(get_curren
         "category": db_post.category,
         "title": db_post.title,
         "content": db_post.content,
+        "image_url": db_post.image_url,
         "created_at": db_post.created_at.isoformat() if db_post.created_at else None,
         "likes_count": 0,
         "liked_by_me": False,
@@ -299,6 +328,7 @@ def get_posts(current_user: models.User = Depends(get_current_user), db: Session
             "category": p.category,
             "title": p.title,
             "content": p.content,
+            "image_url": p.image_url,
             "created_at": p.created_at.isoformat() if p.created_at else None,
             "likes_count": p.likes_count,
             "liked_by_me": liked,

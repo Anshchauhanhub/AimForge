@@ -32,9 +32,10 @@ class Post(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
-    category = Column(String, nullable=False)  # material, achievement, struggle
+    category = Column(String, nullable=False)  # material, achievement, struggle - kept for DB compatibility
     title = Column(String, nullable=False)
     content = Column(String, nullable=False)
+    image_url = Column(String, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     likes_count = Column(Integer, default=0)
 
