@@ -63,6 +63,11 @@ class StatsUpdate(BaseModel):
     streak_add: int = 0
     sessions_add: int = 0
 
+class PostCreate(BaseModel):
+    category: str  # material, achievement, struggle
+    title: str
+    content: str
+
 # ==================
 # Auth Endpoints
 # ==================
@@ -237,6 +242,113 @@ Respond ONLY with a valid JSON object matching this schema. Do NOT include markd
         except:
             pass
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ==================
+# Social / Community Endpoints
+# ==================
+
+@app.post("/api/posts")
+def create_post(post: PostCreate, current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    if post.category not in ("material", "achievement", "struggle"):
+        raise HTTPException(status_code=400, detail="Category must be material, achievement, or struggle")
+    if not post.title.strip() or not post.content.strip():
+        raise HTTPException(status_code=400, detail="Title and content are required")
+
+    db_post = models.Post(
+        user_id=current_user.id,
+        category=post.category,
+        title=post.title.strip(),
+        content=post.content.strip(),
+    )
+    db.add(db_post)
+    db.commit()
+    db.refresh(db_post)
+
+    return {
+        "id": db_post.id,
+        "category": db_post.category,
+        "title": db_post.title,
+        "content": db_post.content,
+        "created_at": db_post.created_at.isoformat() if db_post.created_at else None,
+        "likes_count": 0,
+        "liked_by_me": False,
+        "author": {
+            "id": current_user.id,
+            "username": current_user.username,
+            "display_name": current_user.display_name or current_user.username,
+            "avatar_url": current_user.avatar_url or "",
+        }
+    }
+
+
+@app.get("/api/posts")
+def get_posts(current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    posts = db.query(models.Post).order_by(models.Post.created_at.desc()).limit(50).all()
+
+    result = []
+    for p in posts:
+        author = db.query(models.User).filter(models.User.id == p.user_id).first()
+        liked = db.query(models.PostLike).filter(
+            models.PostLike.post_id == p.id,
+            models.PostLike.user_id == current_user.id
+        ).first() is not None
+
+        result.append({
+            "id": p.id,
+            "category": p.category,
+            "title": p.title,
+            "content": p.content,
+            "created_at": p.created_at.isoformat() if p.created_at else None,
+            "likes_count": p.likes_count,
+            "liked_by_me": liked,
+            "is_mine": p.user_id == current_user.id,
+            "author": {
+                "id": author.id,
+                "username": author.username,
+                "display_name": author.display_name or author.username,
+                "avatar_url": author.avatar_url or "",
+            } if author else None,
+        })
+
+    return result
+
+
+@app.post("/api/posts/{post_id}/like")
+def toggle_like(post_id: int, current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    post = db.query(models.Post).filter(models.Post.id == post_id).first()
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+
+    existing = db.query(models.PostLike).filter(
+        models.PostLike.post_id == post_id,
+        models.PostLike.user_id == current_user.id
+    ).first()
+
+    if existing:
+        db.delete(existing)
+        post.likes_count = max(0, post.likes_count - 1)
+        db.commit()
+        return {"liked": False, "likes_count": post.likes_count}
+    else:
+        like = models.PostLike(user_id=current_user.id, post_id=post_id)
+        db.add(like)
+        post.likes_count += 1
+        db.commit()
+        return {"liked": True, "likes_count": post.likes_count}
+
+
+@app.delete("/api/posts/{post_id}")
+def delete_post(post_id: int, current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    post = db.query(models.Post).filter(models.Post.id == post_id).first()
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    if post.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Cannot delete another user's post")
+
+    db.delete(post)
+    db.commit()
+    return {"status": "deleted"}
 
 
 # ==================

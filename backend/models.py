@@ -1,4 +1,6 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, UniqueConstraint
+from sqlalchemy.orm import relationship
+from datetime import datetime, timezone
 from database import Base
 
 class User(Base):
@@ -14,6 +16,8 @@ class User(Base):
     streak = Column(Integer, default=0)
     sessions = Column(Integer, default=0)
 
+    posts = relationship("Post", back_populates="author", cascade="all, delete-orphan")
+
 class PlanItem(Base):
     __tablename__ = "plan_items"
 
@@ -22,3 +26,31 @@ class PlanItem(Base):
     topic = Column(String)
     duration = Column(Integer)
     completed = Column(Integer, default=0)
+
+class Post(Base):
+    __tablename__ = "posts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    category = Column(String, nullable=False)  # material, achievement, struggle
+    title = Column(String, nullable=False)
+    content = Column(String, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    likes_count = Column(Integer, default=0)
+
+    author = relationship("User", back_populates="posts")
+    likes = relationship("PostLike", back_populates="post", cascade="all, delete-orphan")
+
+class PostLike(Base):
+    __tablename__ = "post_likes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    post_id = Column(Integer, ForeignKey("posts.id"), nullable=False)
+
+    post = relationship("Post", back_populates="likes")
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "post_id", name="uq_user_post_like"),
+    )
+

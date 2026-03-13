@@ -103,6 +103,14 @@
             </svg>
             Practice
           </button>
+          <button class="tab-btn" data-view="community">
+            <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16">
+              <path fill-rule="evenodd"
+                d="M1.5 14.25c0 .138.112.25.25.25H4v-1.25a.75.75 0 0 1 .75-.75h2.5a.75.75 0 0 1 .75.75v1.25h2.25a.25.25 0 0 0 .25-.25V1.75a.25.25 0 0 0-.25-.25h-8.5a.25.25 0 0 0-.25.25v12.5ZM1.75 0A1.75 1.75 0 0 0 0 1.75v12.5C0 15.216.784 16 1.75 16H4v-1.25A.25.25 0 0 1 4.25 14.5h3.5a.25.25 0 0 1 .25.25V16h2.25A1.75 1.75 0 0 0 12 14.25V1.75A1.75 1.75 0 0 0 10.25 0ZM3.5 3.75a.75.75 0 0 1 .75-.75h3.5a.75.75 0 0 1 0 1.5h-3.5a.75.75 0 0 1-.75-.75ZM4.25 6a.75.75 0 0 0 0 1.5h3.5a.75.75 0 0 0 0-1.5ZM3.5 9.75A.75.75 0 0 1 4.25 9h3.5a.75.75 0 0 1 0 1.5h-3.5a.75.75 0 0 1-.75-.75ZM14.5 1.75a.25.25 0 0 0-.25-.25H13v12.5h1.25a.25.25 0 0 0 .25-.25ZM12.5 0h1.75A1.75 1.75 0 0 1 16 1.75v10.5A1.75 1.75 0 0 1 14.25 14H12.5Z">
+              </path>
+            </svg>
+            Community
+          </button>
         </nav>
 
         <div class="tab-content-wrapper">
@@ -210,6 +218,33 @@
               </div>
             </div>
           </section>
+
+          <!-- Community View -->
+          <section id="view-community" class="view hidden-view">
+            <!-- Post Composer -->
+            <div class="post-composer border-panel">
+              <h3 class="composer-title">Share with the Community</h3>
+              <div class="category-selector" id="categorySelector">
+                <button class="category-pill active" data-cat="material">📚 Study Material</button>
+                <button class="category-pill" data-cat="achievement">🏆 Achievement</button>
+                <button class="category-pill" data-cat="struggle">💪 Struggle</button>
+              </div>
+              <input type="text" id="postTitle" class="gh-input" placeholder="Give your post a title..." maxlength="120">
+              <textarea id="postContent" class="gh-input post-textarea" placeholder="Share what's on your mind..." rows="3"></textarea>
+              <div class="composer-actions">
+                <button id="submitPostBtn" class="gh-btn primary">
+                  <svg aria-hidden="true" height="16" viewBox="0 0 16 16" width="16"><path d="M1.592 2.712 2.38 7.25h4.87a.75.75 0 1 1 0 1.5H2.38l-.788 4.538L13.929 8 1.592 2.712ZM.989 8 .064 2.68a1.341 1.341 0 0 1 1.85-1.462l13.402 5.744a1.13 1.13 0 0 1 0 2.076L1.913 14.782a1.341 1.341 0 0 1-1.85-1.463L.99 8Z" fill="currentColor"></path></svg>
+                  Post
+                </button>
+              </div>
+            </div>
+
+            <!-- Feed -->
+            <div class="community-feed" id="communityFeed">
+              <div class="feed-loading text-sm color-muted">Loading community posts...</div>
+            </div>
+          </section>
+
         </div>
       </main>
     </div> <!-- End Main Layout -->
