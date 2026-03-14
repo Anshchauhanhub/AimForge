@@ -64,6 +64,7 @@ class ChatRequest(BaseModel):
 class PlanItemBase(BaseModel):
     topic: str
     duration: int
+    scheduled_date: Optional[str] = None
 
 class StatsUpdate(BaseModel):
     streak_add: int = 0
@@ -170,7 +171,7 @@ def update_stats(stats: StatsUpdate, current_user: models.User = Depends(get_cur
 @app.get("/api/plan")
 def get_plan(current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
     items = db.query(models.PlanItem).filter(models.PlanItem.user_id == current_user.id).all()
-    return [{"id": item.id, "topic": item.topic, "duration": item.duration, "completed": bool(item.completed)} for item in items]
+    return [{"id": item.id, "topic": item.topic, "duration": item.duration, "scheduled_date": item.scheduled_date, "completed": bool(item.completed)} for item in items]
 
 
 @app.post("/api/plan")
@@ -180,14 +181,20 @@ def save_plan(items: list[PlanItemBase], current_user: models.User = Depends(get
 
     saved_items = []
     for item in items:
-        db_item = models.PlanItem(user_id=current_user.id, topic=item.topic, duration=item.duration, completed=0)
+        db_item = models.PlanItem(
+            user_id=current_user.id, 
+            topic=item.topic, 
+            duration=item.duration, 
+            scheduled_date=item.scheduled_date,
+            completed=0
+        )
         db.add(db_item)
         saved_items.append(db_item)
     db.commit()
     for db_item in saved_items:
         db.refresh(db_item)
 
-    return [{"id": item.id, "topic": item.topic, "duration": item.duration, "completed": bool(item.completed)} for item in saved_items]
+    return [{"id": item.id, "topic": item.topic, "duration": item.duration, "scheduled_date": item.scheduled_date, "completed": bool(item.completed)} for item in saved_items]
 
 
 @app.put("/api/plan/{item_id}")
@@ -198,6 +205,19 @@ def complete_plan_item(item_id: int, current_user: models.User = Depends(get_cur
     item.completed = 1
     db.commit()
     return {"id": item.id, "completed": True}
+
+
+class ScheduleUpdate(BaseModel):
+    scheduled_date: str # YYYY-MM-DD
+
+@app.put("/api/plan/{item_id}/schedule")
+def schedule_plan_item(item_id: int, req: ScheduleUpdate, current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    item = db.query(models.PlanItem).filter(models.PlanItem.id == item_id, models.PlanItem.user_id == current_user.id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    item.scheduled_date = req.scheduled_date
+    db.commit()
+    return {"id": item.id, "scheduled_date": item.scheduled_date}
 
 
 # ==================

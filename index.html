@@ -92,6 +92,12 @@
             </svg>
             Goals <span class="badge" id="goalsBadge">0</span>
           </button>
+          <button class="tab-btn" data-view="planner">
+            <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16">
+              <path d="M4.75 0a.75.75 0 0 1 .75.75V2h5V.75a.75.75 0 0 1 1.5 0V2h1.25c.966 0 1.75.784 1.75 1.75v10.5A1.75 1.75 0 0 1 13.25 16H2.75A1.75 1.75 0 0 1 1 14.25V3.75C1 2.784 1.784 2 2.75 2H4V.75A.75.75 0 0 1 4.75 0ZM2.5 7.5v6.75c0 .138.112.25.25.25h10.5a.25.25 0 0 0 .25-.25V7.5H2.5Zm10.75-4H2.75a.25.25 0 0 0-.25.25V6h11V3.75a.25.25 0 0 0-.25-.25Z"></path>
+            </svg>
+            Planner
+          </button>
           <button class="tab-btn" data-view="practice">
             <svg aria-hidden="true" height="16" viewBox="0 0 16 16" version="1.1" width="16">
               <path fill-rule="evenodd"
@@ -169,6 +175,31 @@
 
             <div class="plan-container" id="planContainer">
               <div class="empty-state text-sm">No curriculum assigned yet. Consult the AI in the Practice tab to begin!
+              </div>
+            </div>
+          </section>
+
+          <!-- Planner View -->
+          <section id="view-planner" class="view hidden-view">
+            <div class="planner-header">
+              <h2 class="section-title">Weekly Study Planner</h2>
+              <p class="text-sm color-muted">Organize your sprints and master your focus.</p>
+            </div>
+            <div class="planner-grid" id="plannerGrid">
+              <!-- Grid columns for days of the week -->
+              <div class="day-column" data-day="0"><h3>Mon</h3><div class="day-tasks"></div></div>
+              <div class="day-column" data-day="1"><h3>Tue</h3><div class="day-tasks"></div></div>
+              <div class="day-column" data-day="2"><h3>Wed</h3><div class="day-tasks"></div></div>
+              <div class="day-column" data-day="3"><h3>Thu</h3><div class="day-tasks"></div></div>
+              <div class="day-column" data-day="4"><h3>Fri</h3><div class="day-tasks"></div></div>
+              <div class="day-column" data-day="5"><h3>Sat</h3><div class="day-tasks"></div></div>
+              <div class="day-column" data-day="6"><h3>Sun</h3><div class="day-tasks"></div></div>
+            </div>
+            
+            <div class="unscheduled-section mt-6">
+              <h3 class="text-sm mb-2">Unscheduled Goals</h3>
+              <div class="unscheduled-list" id="unscheduledList">
+                <!-- Populated via JS -->
               </div>
             </div>
           </section>

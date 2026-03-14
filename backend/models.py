@@ -25,6 +25,7 @@ class PlanItem(Base):
     user_id = Column(Integer, index=True)
     topic = Column(String)
     duration = Column(Integer)
+    scheduled_date = Column(String, nullable=True) # YYYY-MM-DD
     completed = Column(Integer, default=0)
 
 class Post(Base):

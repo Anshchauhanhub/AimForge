@@ -90,6 +90,10 @@ const els = {
   imagePreviewContainer: document.getElementById('imagePreviewContainer'),
   imagePreview: document.getElementById('imagePreview'),
   removeImageBtn: document.getElementById('removeImageBtn'),
+
+  // Planner
+  plannerGrid: document.getElementById('plannerGrid'),
+  unscheduledList: document.getElementById('unscheduledList'),
 };
 
 // Initialize
@@ -198,9 +202,10 @@ function switchView(viewName) {
     }
   });
 
-  if (viewName === 'goals' || viewName === 'overview') {
+  if (viewName === 'goals' || viewName === 'overview' || viewName === 'planner') {
     renderPlan();
     renderPinnedGoals();
+    if (viewName === 'planner') renderPlanner();
   }
 
   if (viewName === 'community') {
@@ -757,6 +762,100 @@ function timeAgo(isoString) {
   if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
   if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
   return date.toLocaleDateString();
+}
+
+// ==============
+// Planner Logic
+// ==============
+
+function renderPlanner() {
+  const grid = els.plannerGrid;
+  const unscheduled = els.unscheduledList;
+
+  // Clear day columns
+  grid.querySelectorAll('.day-tasks').forEach(col => col.innerHTML = '');
+  unscheduled.innerHTML = '';
+
+  const now = new Date();
+  const weekDates = [];
+  const startOfWeek = new Date(now);
+  startOfWeek.setDate(now.getDate() - (now.getDay() === 0 ? 6 : now.getDay() - 1));
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(startOfWeek);
+    d.setDate(startOfWeek.getDate() + i);
+    weekDates.push(d.toISOString().split('T')[0]);
+  }
+
+  const items = state.plan;
+  const unscheduledItems = items.filter(item => !item.scheduled_date && !item.completed);
+
+  // Group scheduled items
+  items.forEach(item => {
+    if (item.scheduled_date) {
+      const dayIdx = weekDates.indexOf(item.scheduled_date);
+      if (dayIdx !== -1) {
+        const col = grid.querySelector(`.day-column[data-day="${dayIdx}"] .day-tasks`);
+        if (col) {
+          const card = document.createElement('div');
+          card.className = `planner-task-card ${item.completed ? 'completed' : ''}`;
+          card.innerHTML = `<strong>${item.topic}</strong><br><span class="text-xs color-muted">${item.duration}m</span>`;
+          card.onclick = () => {
+             if (!item.completed) {
+                switchView('practice');
+                prepareTimerFor(item);
+             }
+          };
+          col.appendChild(card);
+        }
+      }
+    }
+  });
+
+  // Render unscheduled
+  if (unscheduledItems.length === 0) {
+    unscheduled.innerHTML = '<p class="text-sm color-muted">No unscheduled goals.</p>';
+  } else {
+    unscheduledItems.forEach(item => {
+      const el = document.createElement('div');
+      el.className = 'unscheduled-item';
+      el.innerHTML = `<span>${item.topic}</span> <span class="text-xs color-muted">${item.duration}m</span>`;
+      el.onclick = () => showScheduleDialog(item, weekDates);
+      unscheduled.appendChild(el);
+    });
+  }
+}
+
+function showScheduleDialog(item, weekDates) {
+  const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const choice = prompt(`Schedule "${item.topic}" for which day?\n${dayNames.map((d, i) => `${i + 1}: ${d} (${weekDates[i]})`).join('\n')}\n(Enter 1-7)`);
+  
+  if (choice && parseInt(choice) >= 1 && parseInt(choice) <= 7) {
+    const selectedDate = weekDates[parseInt(choice) - 1];
+    updatePlanItemSchedule(item.id, selectedDate);
+  }
+}
+
+async function updatePlanItemSchedule(itemId, date) {
+  try {
+    const res = await fetch(`${API_BASE}/api/plan/${itemId}/schedule`, {
+      method: 'PUT',
+      headers: authHeaders(),
+      body: JSON.stringify({ scheduled_date: date })
+    });
+
+    if (res.ok) {
+      const updated = await res.json();
+      const planIdx = state.plan.findIndex(i => i.id === itemId);
+      if (planIdx !== -1) {
+        state.plan[planIdx].scheduled_date = updated.scheduled_date;
+        renderPlanner();
+        addActivityLog(`Scheduled "${state.plan[planIdx].topic}" for ${date}`);
+      }
+    }
+  } catch (err) {
+    console.error("Failed to schedule item", err);
+  }
 }
 
 function escapeHtml(text) {
